@@ -38,4 +38,9 @@ body {
     width: 1570px;
   }
 }
+@media (min-width: 2200px) {
+  #app {
+    width: 2170px;
+  }
+}
 </style>
