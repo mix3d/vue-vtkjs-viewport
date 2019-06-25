@@ -143,7 +143,7 @@ export default {
     // this.componentDidUpdate({});
 
     if (this.actors) {
-      actors = actors.concat(this.props.actors);
+      actors = actors.concat(this.actors);
     }
 
     if (this.labelmap && this.labelmap.actor) {
@@ -266,7 +266,7 @@ export default {
 
         const labelmapImageData = newLabel;
         const labelmap = createLabelPipeline(
-          this.props.paintFilterBackgroundImageData,
+          this.paintFilterBackgroundImageData,
           labelmapImageData
         );
 
@@ -299,8 +299,8 @@ export default {
               this.paintFilter.addPoint(
                 this.paintWidget.getWidgetState().getTrueOrigin()
               );
-              if (this.props.onPaintStart) {
-                this.props.onPaintStart();
+              if (this.onPaintStart) {
+                this.onPaintStart();
               }
             })
           );
@@ -310,8 +310,8 @@ export default {
                 this.paintFilter.addPoint(
                   this.paintWidget.getWidgetState().getTrueOrigin()
                 );
-                if (this.props.onPaint) {
-                  this.props.onPaint();
+                if (this.onPaint) {
+                  this.onPaint();
                 }
               }
             })
@@ -319,8 +319,8 @@ export default {
           this.subs.paintEnd.sub(
             this.viewWidget.onEndInteractionEvent(() => {
               this.paintFilter.endStroke();
-              if (this.props.onPaintEnd) {
-                this.props.onPaintEnd();
+              if (this.onPaintEnd) {
+                this.onPaintEnd();
               }
             })
           );
