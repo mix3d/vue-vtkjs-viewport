@@ -64,10 +64,16 @@ export default {
       const camera = this.renderer.getActiveCamera();
       manip.setNormal(...camera.getDirectionOfProjection());
       manip.setOrigin(...camera.getFocalPoint());
+    },
+    onResize() {
+      // TODO: debounce
+      this.genericRenderWindow.resize();
     }
   },
 
   mounted() {
+    window.addEventListener("resize", this.onResize);
+
     this.genericRenderWindow = vtkGenericRenderWindow.newInstance({
       background: [0, 0, 0]
     });
@@ -279,6 +285,8 @@ export default {
     }
   },
   beforeDestroy() {
+    window.removeEventListener("resize", this.onResize);
+
     Object.keys(this.subs).forEach(k => {
       this.subs[k].unsubscribe();
     });
@@ -355,7 +363,8 @@ const getVOI = actor => {
 </script>
 
 <style lang="scss" scoped>
-.viewer2d {
+.viewer2d,
+.container2d {
   width: 100%;
   height: 100%;
   position: relative;

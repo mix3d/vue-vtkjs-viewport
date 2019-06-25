@@ -1,11 +1,11 @@
 import macro from "vtk.js/Sources/macro";
 
 let instanceId = 1;
-
+const xmlns = "http://www.w3.org/2000/svg";
 function getWidgetNode(svgContainer, widgetId) {
   let node = svgContainer.querySelector(`#${widgetId}`);
   if (!node) {
-    node = document.createElement("g");
+    node = document.createElementNS(xmlns, "g");
     node.setAttribute("id", widgetId);
     svgContainer.appendChild(node);
   }
@@ -20,9 +20,12 @@ function vtkSVGCrosshairsWidget(publicAPI, model) {
 
   publicAPI.render = (svgContainer, scale) => {
     const node = getWidgetNode(svgContainer, model.widgetId);
+
     console.log("rendering crosshairs widget", node, svgContainer);
+
     const { point, strokeColor, strokeWidth, strokeDashArray, padding } = model;
     if (point[0] === null || point[1] === null) {
+      console.log("asked to draw with null points", point);
       return;
     }
 
@@ -41,8 +44,8 @@ function vtkSVGCrosshairsWidget(publicAPI, model) {
     const top = [width / scale / 2, 0];
     const right = [width / scale, height / scale / 2];
     const bottom = [width / scale / 2, height / scale];
+
     node.innerHTML = `
-<g id="container" fill-opacity="1" stroke-dasharray="none" stroke="none" stroke-opacity="1" fill="none">
  <!-- Top !-->
   <line
     x1="${p[0]}"
@@ -91,7 +94,6 @@ function vtkSVGCrosshairsWidget(publicAPI, model) {
     stroke-linejoin="round"
     stroke-width=${strokeWidth}
   ></line>
-</g>
       `;
   };
 }
