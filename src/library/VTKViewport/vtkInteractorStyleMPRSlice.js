@@ -129,6 +129,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       if (mapper) {
         // prevent zoom manipulator from messing with our focal point
         camera.setFreezeFocalPoint(true);
+        // publicAPI.setSliceNormal(...publicAPI.getSliceNormal());
       } else {
         camera.setFreezeFocalPoint(false);
       }

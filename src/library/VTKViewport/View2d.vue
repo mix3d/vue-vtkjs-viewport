@@ -68,6 +68,16 @@ export default {
     onResize() {
       // TODO: debounce
       this.genericRenderWindow.resize();
+    },
+    updateVolumesForRendering(volumes) {
+      volumes &&
+        volumes.forEach(volume => {
+          if (!volume.isA("vtkVolume")) {
+            console.warn("Data to <Vtk2D> is not vtkVolume data");
+          }
+          this.renderer.addVolume(volume);
+        });
+      this.renderWindow.render();
     }
   },
 
@@ -137,7 +147,7 @@ export default {
 
     interactor.setInteractorStyle(istyle);
     */
-
+    //  TODO: assumes the volume is always set for this mounted state...
     const istyleVolumeMapper =
       this.interactorStyleVolumeMapper || this.volumes[0].getMapper();
 
@@ -151,9 +161,11 @@ export default {
     });
     this.updatePaintbrush();
 
+    // add the current volumes to the vtk renderer
+    this.updateVolumesForRendering(this.volumes);
+
     // TODO: Not sure why this is necessary to force the initial draw
     this.genericRenderWindow.resize();
-
     if (this.onCreated) {
       console.log(
         "calling onCreated when View2d was mounted",
@@ -179,16 +191,12 @@ export default {
     }
   },
   watch: {
-    volumes(newVolumes) {
-      newVolumes.forEach(volume => {
-        if (!volume.isA("vtkVolume")) {
-          console.warn("Data to <Vtk2D> is not vtkVolume data");
-        }
-        this.renderer.addVolume(volume);
-      });
-      this.renderWindow.render();
+    volumes(newVolumes, oldVolumes) {
+      console.log("volumes changed", newVolumes, oldVolumes);
+      this.updateVolumesForRendering(newVolumes);
     },
     paintFilterBackgroundImageData(newBGImage, oldBGImage) {
+      console.log("background changed", newBGImage, oldBGImage);
       if (!oldBGImage && newBGImage) {
         // re-render if data has updated
         this.subs.data.sub(
@@ -201,6 +209,7 @@ export default {
       }
     },
     paintFilterLabelMapImageData(newLabelMap, oldLabelMap) {
+      console.log("filter labels changed", newLabelMap, oldLabelMap);
       if (oldLabelMap !== newLabelMap && newLabelMap) {
         this.subs.labelmap.unsubscribe();
 
@@ -226,6 +235,7 @@ export default {
       }
     },
     painting(newPainting, oldPainting) {
+      console.log("painting changed", newPainting, oldPainting);
       if (oldPainting !== newPainting) {
         if (newPainting) {
           this.viewWidget = this.widgetManager.addWidget(
@@ -281,6 +291,8 @@ export default {
   },
   computed: {
     voi() {
+      // TODO: trigger getVOI to update!
+      console.log("computing voi");
       return getVOI(this.volumes[0]);
     }
   },

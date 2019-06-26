@@ -1,11 +1,13 @@
 import MPRCrosshairs from "./MPRCrosshairs.vue";
+import BasicVolume from "./BasicVolume.vue";
 
 export default [
   {
     title: "Basic Usage",
     url: "basic",
     description:
-      "How to use the component to render an array of vtkVolumes and manipulate their RGB Transfer Functions"
+      "How to use the component to render an array of vtkVolumes and manipulate their RGB Transfer Functions",
+    component: BasicVolume
   },
   {
     title: "MPR Crosshairs",

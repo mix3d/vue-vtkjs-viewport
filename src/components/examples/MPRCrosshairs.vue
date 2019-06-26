@@ -5,15 +5,18 @@
     <div v-if="!volumes || !volumes.length">
       <h3>Loading...</h3>
     </div>
-    <div v-else class="row">
-      <div class="col">
-        <view-2d :volumes="volumes" :onCreated="storeApi(0)" />
-      </div>
-      <div class="col">
-        <view-2d :volumes="volumes" :onCreated="storeApi(1)" />
-      </div>
-      <div class="col">
-        <view-2d :volumes="volumes" :onCreated="storeApi(2)" />
+    <div v-else>
+      <button @click="reset">Reset</button>
+      <div class="row">
+        <div class="col">
+          <view-2d :volumes="volumes" :onCreated="storeApi(0)" />
+        </div>
+        <div class="col">
+          <view-2d :volumes="volumes" :onCreated="storeApi(1)" />
+        </div>
+        <div class="col">
+          <view-2d :volumes="volumes" :onCreated="storeApi(2)" />
+        </div>
       </div>
     </div>
   </div>
@@ -49,6 +52,7 @@ export default {
   // apis: [],
 
   methods: {
+    reset() {},
     storeApi(viewportIndex) {
       return api => {
         this.apis[viewportIndex] = api;

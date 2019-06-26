@@ -1,5 +1,5 @@
-import View2D from "./VTKViewport/View2d";
-import View3D from "./VTKViewport/View3d";
+import View2D from "./VTKViewport/View2D";
+import View3D from "./VTKViewport/View3D";
 import ViewportOverlay from "./ViewportOverlay/ViewportOverlay.vue";
 import vtkInteractorStyleMPRSlice from "./VTKViewport/vtkInteractorStyleMPRSlice.js";
 import vtkInteractorStyleMPRWindowLevel from "./VTKViewport/vtkInteractorStyleMPRWindowLevel.js";
