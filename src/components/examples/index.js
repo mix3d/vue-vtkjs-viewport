@@ -1,5 +1,6 @@
-import MPRCrosshairs from "./MPRCrosshairs.vue";
 import BasicVolume from "./BasicVolume.vue";
+import MPRCrosshairs from "./MPRCrosshairs.vue";
+import PaintWidget from "./PaintWidget.vue";
 
 export default [
   {
@@ -8,6 +9,13 @@ export default [
     description:
       "How to use the component to render an array of vtkVolumes and manipulate their RGB Transfer Functions",
     component: BasicVolume
+  },
+  {
+    title: "Image Segmentation via Paint Widget",
+    url: "paintwidget",
+    description:
+      "This example demonstrates how to use VTK's PaintWidget and PaintFilter to perform manual segmentation.",
+    component: PaintWidget
   },
   {
     title: "MPR Crosshairs",

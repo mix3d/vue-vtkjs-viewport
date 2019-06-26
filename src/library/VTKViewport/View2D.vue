@@ -12,6 +12,7 @@ import vtkImageData from "vtk.js/Sources/Common/DataModel/ImageData";
 import vtkDataArray from "vtk.js/Sources/Common/Core/DataArray";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
+// Use modified MPRSlice interactor
 //import vtkInteractorStyleMPRSlice from 'vtk.js/Sources/Interaction/Style/InteractorStyleMPRSlice';
 import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice.js";
 import vtkPaintFilter from "vtk.js/Sources/Filters/General/PaintFilter";

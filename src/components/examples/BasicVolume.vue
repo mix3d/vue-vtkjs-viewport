@@ -138,9 +138,8 @@ export default {
           const istyle = vtkInteractorStyleMPRWindowLevel.newInstance();
 
           renderWindow.getInteractor().setInteractorStyle(istyle);
-          // TODO: check that volume is set?!
           console.log(
-            "seting component",
+            "setting component",
             viewportIndex,
             component,
             component.volumes

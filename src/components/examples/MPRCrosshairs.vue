@@ -109,7 +109,14 @@ export default {
             camera.setViewUp(0, 0, 1);
             break;
         }
-        console.log("storeAPI renderWindow rendering!");
+        let data = {
+          roll: camera.roll,
+          yaw: camera.yaw,
+          pitch: camera.pitch,
+          viewMatrix: camera.getViewMatrix(),
+          orientation: camera.getOrientation()
+        };
+        console.log("storeAPI renderWindow rendering!", data);
         renderWindow.render();
       };
     }

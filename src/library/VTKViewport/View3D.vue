@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-if="volumes && volumes.length && actors && actors.length"
-    class="viewer3d"
-  >
+  <div v-if="volumes && volumes.length" class="viewer3d">
     <div ref="container" class="container3d" />
     <ViewportOverlay v-bind="dataDetails" :voi="voi" />
   </div>
@@ -91,15 +88,17 @@ export default {
     onPaint: Function,
     onPaintStart: Function,
     onPaintEnd: Function,
-    sliceNormal: { type: Array, required: true, default: () => [0, 0, 1] },
+    sliceNormal: { type: Array, default: () => [0, 0, 1] },
     dataDetails: Object,
     onCreated: Function,
     onDestroyed: Function
   },
 
-  // non-reactive variables
-  genericRenderWindow: null,
-  widgetManager: vtkWidgetManager.newInstance(),
+  created() {
+    // non-reactive variables
+    this.genericRenderWindow = null;
+    this.widgetManager = vtkWidgetManager.newInstance();
+  },
 
   data() {
     return {
@@ -113,13 +112,24 @@ export default {
       }
     };
   },
-
+  methods: {
+    updateVolumesForRendering(volumes) {
+      volumes &&
+        volumes.forEach(volume => {
+          if (!volume.isA("vtkVolume")) {
+            console.warn("Data to <Vtk2D> is not vtkVolume data");
+          }
+          this.renderer.addVolume(volume);
+        });
+      this.renderWindow.render();
+    }
+  },
   mounted() {
     this.genericRenderWindow = vtkGenericRenderWindow.newInstance({
       background: [0, 0, 0]
     });
 
-    this.genericRenderWindow.setContainer(this.container);
+    this.genericRenderWindow.setContainer(this.$refs.container);
 
     let widgets = [];
     let filters = [];
@@ -162,6 +172,9 @@ export default {
       this.renderer.addVolume(this.labelmap.actor);
     }
 
+    // add the current volumes to the vtk renderer
+    this.updateVolumesForRendering(this.volumes);
+
     this.renderer.resetCamera();
     this.renderer.updateLightsGeometryToFollowCamera();
 
@@ -177,7 +190,7 @@ export default {
       const api = {
         genericRenderWindow: this.genericRenderWindow,
         widgetManager: this.widgetManager,
-        container: this.container.current,
+        container: this.$refs.container,
         widgets,
         filters,
         actors,
@@ -217,19 +230,7 @@ export default {
   watch: {
     volumes(newVolumes, prevVolumes) {
       if (prevVolumes !== newVolumes) {
-        newVolumes.forEach(volume => {
-          if (!volume.isA("vtkVolume")) {
-            console.warn("Data to <Vtk3D> is not vtkVolume data");
-          }
-        });
-
-        if (newVolumes.length) {
-          newVolumes.forEach(this.renderer.addVolume);
-        } else {
-          // TODO: Remove all volumes
-        }
-
-        this.renderWindow.render();
+        this.updateVolumesForRendering(newVolumes);
       }
     },
     actors(newActors, prevActors) {
