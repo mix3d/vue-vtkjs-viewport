@@ -21,11 +21,9 @@ function vtkSVGCrosshairsWidget(publicAPI, model) {
   publicAPI.render = (svgContainer, scale) => {
     const node = getWidgetNode(svgContainer, model.widgetId);
 
-    console.log("rendering crosshairs widget", node, svgContainer);
-
     const { point, strokeColor, strokeWidth, strokeDashArray, padding } = model;
     if (point[0] === null || point[1] === null) {
-      console.log("asked to draw with null points", point);
+      // console.log("asked to draw with null points", point);
       return;
     }
 

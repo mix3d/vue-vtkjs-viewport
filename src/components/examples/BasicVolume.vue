@@ -138,12 +138,12 @@ export default {
           const istyle = vtkInteractorStyleMPRWindowLevel.newInstance();
 
           renderWindow.getInteractor().setInteractorStyle(istyle);
-          console.log(
-            "setting component",
-            viewportIndex,
-            component,
-            component.volumes
-          );
+          // console.log(
+          //   "setting component",
+          //   viewportIndex,
+          //   component,
+          //   component.volumes
+          // );
           istyle.setVolumeMapper(component.volumes[0]);
 
           const renderWindows = Object.values(this.components).map(a =>
@@ -169,7 +169,6 @@ export default {
     reader.setUrl("/headsq.vti", { loadData: true }).then(() => {
       const data = reader.getOutputData();
       volumeMapper.setInputData(data);
-      console.log("got data", data);
       this.volumes = [volumeActor];
     });
   }

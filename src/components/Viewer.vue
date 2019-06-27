@@ -12,7 +12,6 @@ export default {
   props: ["path"],
   computed: {
     componentProp() {
-      console.log(this.path);
       let example = examples.find(e => e.url === this.path);
       return example.component || null;
     }

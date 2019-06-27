@@ -168,10 +168,6 @@ export default {
     // TODO: Not sure why this is necessary to force the initial draw
     this.genericRenderWindow.resize();
     if (this.onCreated) {
-      console.log(
-        "calling onCreated when View2d was mounted",
-        this.$refs.container
-      );
       /**
        * Note: The contents of this Object are
        * considered part of the API contract
@@ -293,7 +289,7 @@ export default {
   computed: {
     voi() {
       // TODO: trigger getVOI to update!
-      console.log("computing voi");
+      console.log("computing voi", getVOI(this.volumes[0]));
       return getVOI(this.volumes[0]);
     }
   },

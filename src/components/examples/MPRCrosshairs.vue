@@ -101,12 +101,12 @@ export default {
           case 1:
             // sagittal
             istyle.setSliceNormal(1, 0, 0);
-            camera.setViewUp(0, 0, 1);
+            camera.setViewUp(0, 0, -1);
             break;
           case 2:
             // Coronal
             istyle.setSliceNormal(0, 1, 0);
-            camera.setViewUp(0, 0, 1);
+            camera.setViewUp(0, 0, -1);
             break;
         }
         let data = {
@@ -114,7 +114,8 @@ export default {
           yaw: camera.yaw,
           pitch: camera.pitch,
           viewMatrix: camera.getViewMatrix(),
-          orientation: camera.getOrientation()
+          orientation: camera.getOrientation(),
+          camera
         };
         console.log("storeAPI renderWindow rendering!", data);
         renderWindow.render();
@@ -132,8 +133,10 @@ export default {
 
     reader.setUrl("/headsq.vti", { loadData: true }).then(() => {
       const data = reader.getOutputData();
+      data.setDirection([1, 0, 0, 0, 1, 0, 0, 0, 1]);
       volumeMapper.setInputData(data);
-      console.log("got data", data);
+      console.log("got data", data, volumeMapper, volumeActor);
+      // this.volumes[0].getMapper().getInputData().getDirection()
       this.volumes = [volumeActor];
     });
   }
@@ -177,7 +180,6 @@ function getCrosshairCallbackForIndex(apis, index) {
         displayPosition[0],
         displayPosition[1]
       );
-      console.log("rendering svgWidgetManager via crosshaircallback");
       svgWidgetManager.render();
     });
   };

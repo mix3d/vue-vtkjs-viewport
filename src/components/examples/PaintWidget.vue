@@ -65,6 +65,7 @@
           />
           Paint Threshold Density
         </label>
+        <hr />
       </div>
       <div class="row">
         <div class="col">

@@ -74,7 +74,6 @@ function vtkSVGWidgetManager(publicAPI, model) {
   };
 
   publicAPI.render = () => {
-    console.log("rendering svg widget manager");
     if (model.svgRootNode) {
       const { scale } = model;
       const [width, height] = publicAPI.getSize();
