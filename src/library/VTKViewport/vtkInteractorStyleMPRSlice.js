@@ -248,7 +248,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   };
 
   // in world space
-  publicAPI.setSliceNormal = (...normal) => {
+  publicAPI.setSliceNormal = (normal, viewUp = [0, 1, 0]) => {
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
 
@@ -263,10 +263,10 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       let volumeCoordinateSpace = vec9toMat3(
         mapper.getInputData().getDirection()
       );
+      // Transpose the volume's coordinate space to create a transformation matrix
       vtkMath.transpose3x3(volumeCoordinateSpace, volumeCoordinateSpace);
-      console.log("converting namespace", volumeCoordinateSpace, normal);
+      // Convert the provided normal into the volume's space
       vtkMath.multiply3x3_vect3(volumeCoordinateSpace, normal, normal);
-      console.log("converted to", normal);
 
       const bounds = model.volumeMapper.getBounds();
       // diagonal will be used as "width" of camera scene
@@ -298,16 +298,15 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       ];
 
       // set viewUp based on DOP rotation
-      const oldDop = camera.getDirectionOfProjection();
-      const transform = vtkMatrixBuilder
-        .buildFromDegree()
-        .identity()
-        .rotateFromDirections(oldDop, normal);
+      // const oldDop = camera.getDirectionOfProjection();
+      // const transform = vtkMatrixBuilder
+      //   .buildFromDegree()
+      //   .identity()
+      //   .rotateFromDirections(oldDop, normal);
 
-      const viewUp = [0, 1, 0];
-      transform.apply(viewUp);
+      // const viewUp = [0, 1, 0];
+      // transform.apply(viewUp);
       vtkMath.multiply3x3_vect3(volumeCoordinateSpace, viewUp, viewUp);
-      console.log("converted viewup", viewUp);
 
       camera.setPosition(...cameraPos);
       camera.setDistance(dist);

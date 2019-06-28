@@ -153,7 +153,7 @@ export default {
       this.interactorStyleVolumeMapper || this.volumes[0].getMapper();
     console.log("view2d slice normal");
     istyle.setVolumeMapper(istyleVolumeMapper);
-    istyle.setSliceNormal(0, 0, 1);
+    istyle.setSliceNormal([0, 0, 1]);
     const range = istyle.getSliceRange();
     istyle.setSlice((range[0] + range[1]) / 2);
 
