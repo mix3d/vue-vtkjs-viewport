@@ -255,7 +255,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
     if (model.volumeMapper) {
       vtkMath.normalize(normal);
       let mapper = model.volumeMapper;
-      // get the mapper if the model actually has an actor
+      // get the mapper if the model is actually the actor, not the mapper
       if (!model.volumeMapper.getInputData && model.volumeMapper.getMapper) {
         mapper = model.volumeMapper.getMapper();
         console.log("find mapper when given an actor");
