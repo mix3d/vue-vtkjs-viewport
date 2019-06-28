@@ -1,0 +1,59 @@
+{
+  "origin": [
+    0.0, 
+    0.0, 
+    0.0
+  ], 
+  "cellData": {
+    "arrays": [], 
+    "vtkClass": "vtkDataSetAttributes"
+  }, 
+  "FieldData": {
+    "arrays": [], 
+    "vtkClass": "vtkDataSetAttributes"
+  }, 
+  "vtkClass": "vtkImageData", 
+  "pointData": {
+    "arrays": [
+      {
+        "data": {
+          "numberOfComponents": 1, 
+          "name": "nrrd40730", 
+          "vtkClass": "vtkDataArray", 
+          "dataType": "Uint16Array", 
+          "ranges": [
+            {
+              "max": 4398.0, 
+              "component": null, 
+              "min": 0.0
+            }
+          ], 
+          "ref": {
+            "encode": "LittleEndian", 
+            "basepath": "data", 
+            "id": "0ed4b98d9c6667fa2de3bf81fb8751de", 
+            "registration": "setScalars"
+          }, 
+          "size": 9633792
+        }
+      }
+    ], 
+    "vtkClass": "vtkDataSetAttributes"
+  }, 
+  "spacing": [
+    1.05469, 
+    1.05469, 
+    2.0
+  ], 
+  "extent": [
+    0, 
+    255, 
+    0, 
+    255, 
+    0, 
+    146
+  ], 
+  "metadata": {
+    "name": "vmhead2-small.vti"
+  }
+}

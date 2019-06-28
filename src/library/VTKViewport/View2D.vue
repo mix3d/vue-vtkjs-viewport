@@ -151,7 +151,7 @@ export default {
     //  TODO: assumes the volume is always set for this mounted state...
     const istyleVolumeMapper =
       this.interactorStyleVolumeMapper || this.volumes[0].getMapper();
-
+    console.log("view2d slice normal");
     istyle.setVolumeMapper(istyleVolumeMapper);
     istyle.setSliceNormal(0, 0, 1);
     const range = istyle.getSliceRange();
@@ -220,7 +220,7 @@ export default {
 
         labelmap.mapper.setInputConnection(this.paintFilter.getOutputPort());
 
-        // You can update the labelmap externally just by calling modified()
+        // NOTE: You can update the labelmap externally just by calling modified()
         this.paintFilter.setLabelMap(labelmapImageData);
         this.subs.labelmap.sub(
           labelmapImageData.onModified(() => {

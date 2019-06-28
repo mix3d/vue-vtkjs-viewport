@@ -176,6 +176,9 @@ export default {
     this.updateVolumesForRendering(this.volumes);
 
     this.renderer.resetCamera();
+    const camera = this.renderer.getActiveCamera();
+    console.log(camera);
+    // camera.setViewUp([0, 0, 1]);
     this.renderer.updateLightsGeometryToFollowCamera();
 
     // TODO: Not sure why this is necessary to force the initial draw

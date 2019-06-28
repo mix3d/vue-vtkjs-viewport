@@ -25,8 +25,11 @@
       <strong>Note:</strong> The PaintWidget (circle on hover) is not currently
       visible in the 2D View component.
     </p>
+    <select v-model="selectedFile">
+      <option v-for="file in files" :key="file">{{ file }}</option>
+    </select>
     <hr />
-    <div v-if="!volumes || !volumes.length">
+    <div v-if="loading">
       <h3>Loading...</h3>
     </div>
     <div v-else>
@@ -102,6 +105,8 @@ import vtkDataArray from "vtk.js/Sources/Common/Core/DataArray";
 import vtkColorTransferFunction from "vtk.js/Sources/Rendering/Core/ColorTransferFunction";
 import vtkPiecewiseFunction from "vtk.js/Sources/Common/DataModel/PiecewiseFunction";
 
+import { files } from "@/components/examples";
+
 export default {
   components: {
     "view-2d": View2D,
@@ -115,8 +120,19 @@ export default {
       focusedWidgetId: null,
       paintFilterBackgroundImageData: null,
       paintFilterLabelMapImageData: null,
-      threshold: 1500
+      threshold: 1500,
+      loading: true,
+      selectedFile: files[0]
     };
+  },
+  created() {
+    // non-reactive data
+    this.files = files;
+  },
+  watch: {
+    selectedFile(newVal) {
+      this.loadData(newVal);
+    }
   },
   methods: {
     setWidget(event) {
@@ -184,39 +200,49 @@ export default {
 
         renderWindow.render();
       });
+    },
+    loadData(fileString) {
+      this.loading = true;
+      const reader = vtkHttpDataSetReader.newInstance({
+        fetchGzip: true
+      });
+      const volumeActor = vtkVolume.newInstance();
+      const volumeMapper = vtkVolumeMapper.newInstance();
+
+      volumeActor.setMapper(volumeMapper);
+
+      reader
+        .setUrl(`/${fileString || this.selectedFile}`, { loadData: true })
+        .then(() => {
+          const data = reader.getOutputData();
+          // Force the volume direction
+          // data.setDirection([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+          volumeMapper.setInputData(data);
+          const rgbTransferFunction = volumeActor
+            .getProperty()
+            .getRGBTransferFunction(0);
+          rgbTransferFunction.setMappingRange(500, 3000);
+
+          const labelMapImageData = createLabelMapImageData(data);
+          const volumeRenderingActor = createVolumeRenderingActor(data);
+
+          this.volumes = [volumeActor];
+          this.volumeRenderingVolumes = [volumeRenderingActor];
+          this.paintFilterBackgroundImageData = data;
+          this.paintFilterLabelMapImageData = labelMapImageData;
+          this.loading = false;
+        });
     }
   },
   mounted() {
-    const reader = vtkHttpDataSetReader.newInstance({
-      fetchGzip: true
-    });
-    const volumeActor = vtkVolume.newInstance();
-    const volumeMapper = vtkVolumeMapper.newInstance();
-
-    volumeActor.setMapper(volumeMapper);
-
-    reader.setUrl("/headsq.vti", { loadData: true }).then(() => {
-      const data = reader.getOutputData();
-      volumeMapper.setInputData(data);
-      const rgbTransferFunction = volumeActor
-        .getProperty()
-        .getRGBTransferFunction(0);
-      rgbTransferFunction.setMappingRange(500, 3000);
-
-      const labelMapImageData = createLabelMapImageData(data);
-      const volumeRenderingActor = createVolumeRenderingActor(data);
-
-      this.volumes = [volumeActor];
-      this.volumeRenderingVolumes = [volumeRenderingActor];
-      this.paintFilterBackgroundImageData = data;
-      this.paintFilterLabelMapImageData = labelMapImageData;
-    });
+    this.loadData();
   }
 };
 
 function createVolumeRenderingActor(imageData) {
   const mapper = vtkVolumeMapper.newInstance();
   mapper.setInputData(imageData);
+  mapper.setSampleDistance(20);
 
   const actor = vtkVolume.newInstance();
   actor.setMapper(mapper);

@@ -8,7 +8,11 @@
       the Window/Level buttons, we can see that this is applied inside both
       components.
     </p>
-    <div v-if="!volumes || !volumes.length">
+    <select v-model="selectedFile">
+      <option v-for="file in files" :key="file">{{ file }}</option>
+    </select>
+    <hr />
+    <div v-if="loading">
       <h3>Loading...</h3>
     </div>
     <div v-else>
@@ -39,6 +43,8 @@ import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 
+import { files } from "@/components/examples";
+
 const PRESETS = {
   BONE: {
     windowWidth: 100,
@@ -57,8 +63,20 @@ export default {
   data() {
     return {
       volumes: [],
-      components: []
+      components: [],
+      selectedFile: files[2],
+      loading: true
     };
+  },
+  created() {
+    // unreactive internal variables
+    this.apis = [];
+    this.files = files;
+  },
+  watch: {
+    selectedFile(newVal) {
+      this.loadData(newVal);
+    }
   },
   methods: {
     setWLPreset(preset) {
@@ -152,25 +170,29 @@ export default {
           this.linkAllInteractors(renderWindows);
         }
       };
+    },
+    loadData(fileString) {
+      this.loading = true;
+      const reader = vtkHttpDataSetReader.newInstance({
+        fetchGzip: true
+      });
+      const volumeActor = vtkVolume.newInstance();
+      const volumeMapper = vtkVolumeMapper.newInstance();
+
+      volumeActor.setMapper(volumeMapper);
+
+      reader
+        .setUrl(`/${fileString || this.selectedFile}`, { loadData: true })
+        .then(() => {
+          const data = reader.getOutputData();
+          volumeMapper.setInputData(data);
+          this.volumes = [volumeActor];
+          this.loading = false;
+        });
     }
   },
-  created() {
-    this.apis = [];
-  },
   mounted() {
-    const reader = vtkHttpDataSetReader.newInstance({
-      fetchGzip: true
-    });
-    const volumeActor = vtkVolume.newInstance();
-    const volumeMapper = vtkVolumeMapper.newInstance();
-
-    volumeActor.setMapper(volumeMapper);
-
-    reader.setUrl("/headsq.vti", { loadData: true }).then(() => {
-      const data = reader.getOutputData();
-      volumeMapper.setInputData(data);
-      this.volumes = [volumeActor];
-    });
+    this.loadData();
   }
 };
 </script>

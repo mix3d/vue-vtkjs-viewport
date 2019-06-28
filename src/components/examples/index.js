@@ -2,6 +2,13 @@ import BasicVolume from "./BasicVolume.vue";
 import MPRCrosshairs from "./MPRCrosshairs.vue";
 import PaintWidget from "./PaintWidget.vue";
 
+export const files = [
+  "headsq.vti",
+  "LIDC2.vti",
+  "vmhead2-small.vti",
+  "vmhead2-large.vti",
+]
+
 export default [
   {
     title: "Basic Usage",

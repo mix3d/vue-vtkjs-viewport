@@ -1,8 +1,12 @@
 <template>
   <div>
     <p>This example demonstrates how to use the Crosshairs manipulator.</p>
+    <select v-model="selectedFile">
+      <option v-for="file in files" :key="file">{{ file }}</option>
+    </select>
+    <hr />
 
-    <div v-if="!volumes || !volumes.length">
+    <div v-if="loading">
       <h3>Loading...</h3>
     </div>
     <div v-else>
@@ -28,6 +32,7 @@ import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
+import vtkMath from "vtk.js/Sources/Common/Core/Math";
 
 import {
   View2D,
@@ -36,29 +41,38 @@ import {
   vtkSVGCrosshairsWidget
 } from "@/library";
 
+import { files } from "@/components/examples";
+
 export default {
   components: {
     "view-2d": View2D
   },
   data() {
     return {
-      volumes: []
+      volumes: [],
+      selectedFile: files[0],
+      loading: true
     };
   },
-  created() {
-    this.apis = [];
+  watch: {
+    selectedFile(newVal) {
+      this.loadData(newVal);
+    }
   },
-  // unreactive local variables
-  // apis: [],
+  created() {
+    // unreactive local variables
+    this.windows = [];
+    this.files = files;
+  },
 
   methods: {
     reset() {},
     storeApi(viewportIndex) {
-      return api => {
-        this.apis[viewportIndex] = api;
+      return window => {
+        this.windows[viewportIndex] = window;
 
-        const renderWindow = api.genericRenderWindow.getRenderWindow();
-        const renderer = api.genericRenderWindow.getRenderer();
+        const renderWindow = window.genericRenderWindow.getRenderWindow();
+        const renderer = window.genericRenderWindow.getRenderer();
         const camera = renderer.getActiveCamera();
 
         // TODO: This is a hacky workaround because disabling the vtkInteractorStyleMPRSlice is currently
@@ -71,10 +85,12 @@ export default {
         const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
 
         renderWindow.getInteractor().setInteractorStyle(istyle);
-        istyle.setVolumeMapper(api.volumes[0]);
+        istyle.setVolumeMapper(window.volumes[0]);
+
+        // TODO: adjust camera by position
 
         istyle.setCallback(
-          getCrosshairCallbackForIndex(this.apis, viewportIndex)
+          getCrosshairCallbackForIndex(this.windows, viewportIndex)
         );
 
         const svgWidgetManager = vtkSVGWidgetManager.newInstance();
@@ -86,8 +102,8 @@ export default {
         svgWidgetManager.addWidget(crosshairsWidget);
         svgWidgetManager.render();
 
-        api.svgWidgetManager = svgWidgetManager;
-        api.svgWidgets = {
+        window.svgWidgetManager = svgWidgetManager;
+        window.svgWidgets = {
           crosshairsWidget
         };
 
@@ -95,8 +111,11 @@ export default {
           default:
           case 0:
             //Axial
+            console.log("storeAPI sliceNormal");
             istyle.setSliceNormal(0, 0, 1);
-            camera.setViewUp(0, -1, 0);
+            // camera.setViewUp(0, 1, 0);
+            // camera.applyTransform(transform);
+            // debugger;
             break;
           case 1:
             // sagittal
@@ -120,38 +139,58 @@ export default {
         console.log("storeAPI renderWindow rendering!", data);
         renderWindow.render();
       };
+    },
+    loadData(fileString) {
+      this.loading = true;
+      const reader = vtkHttpDataSetReader.newInstance({
+        fetchGzip: true
+      });
+      const volumeActor = vtkVolume.newInstance();
+      const volumeMapper = vtkVolumeMapper.newInstance();
+
+      volumeActor.setMapper(volumeMapper);
+
+      reader
+        .setUrl(`/${fileString || this.selectedFile}`, { loadData: true })
+        .then(() => {
+          const data = reader.getOutputData();
+          console.log("data direction", data.getDirection());
+          // data.setDirection([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+          volumeMapper.setInputData(data);
+          // console.log("got data", data, volumeMapper, volumeActor);
+          // this.volumes[0].getMapper().getInputData().getDirection()
+          this.volumes = [volumeActor];
+          this.loading = false;
+        });
     }
   },
   mounted() {
-    const reader = vtkHttpDataSetReader.newInstance({
-      fetchGzip: true
-    });
-    const volumeActor = vtkVolume.newInstance();
-    const volumeMapper = vtkVolumeMapper.newInstance();
-
-    volumeActor.setMapper(volumeMapper);
-
-    reader.setUrl("/headsq.vti", { loadData: true }).then(() => {
-      const data = reader.getOutputData();
-      data.setDirection([1, 0, 0, 0, 1, 0, 0, 0, 1]);
-      volumeMapper.setInputData(data);
-      console.log("got data", data, volumeMapper, volumeActor);
-      // this.volumes[0].getMapper().getInputData().getDirection()
-      this.volumes = [volumeActor];
-    });
+    this.loadData();
   }
 };
 
-function getCrosshairCallbackForIndex(apis, index) {
+function getStackScrollCallbackForIndex(windows, index) {
+  return ({ worldPos }) => {
+    windows.forEach((window, viewportIndex) => {
+      if (viewportIndex !== index) {
+        const renderWindow = window.genericRenderWindow.getRenderWindow();
+        const istyle = renderWindow.getInteractor.getInteractorStyle();
+        const sliceNormal = istyle.getSliceNormal();
+      }
+    });
+  };
+}
+
+function getCrosshairCallbackForIndex(windows, index) {
   return ({ worldPos }) => {
     // Set camera focal point to world coordinate for linked views
-    apis.forEach((api, viewportIndex) => {
+    windows.forEach((window, viewportIndex) => {
       if (viewportIndex !== index) {
         // We are basically doing the same as getSlice but with the world coordinate
         // that we want to jump to instead of the camera focal point.
         // I would rather do the camera adjustment directly but I keep
         // doing it wrong and so this is good enough for now.
-        const renderWindow = api.genericRenderWindow.getRenderWindow();
+        const renderWindow = window.genericRenderWindow.getRenderWindow();
 
         const istyle = renderWindow.getInteractor().getInteractorStyle();
         const sliceNormal = istyle.getSliceNormal();
@@ -169,14 +208,14 @@ function getCrosshairCallbackForIndex(apis, index) {
         renderWindow.render();
       }
 
-      const renderer = api.genericRenderWindow.getRenderer();
+      const renderer = window.genericRenderWindow.getRenderer();
       const wPos = vtkCoordinate.newInstance();
       wPos.setCoordinateSystemToWorld();
       wPos.setValue(worldPos);
 
       const displayPosition = wPos.getComputedDisplayValue(renderer);
-      const { svgWidgetManager } = api;
-      api.svgWidgets.crosshairsWidget.setPoint(
+      const { svgWidgetManager } = window;
+      window.svgWidgets.crosshairsWidget.setPoint(
         displayPosition[0],
         displayPosition[1]
       );

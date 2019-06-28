@@ -252,11 +252,23 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
 
-    vtkMath.normalize(normal);
-
     if (model.volumeMapper) {
-      const bounds = model.volumeMapper.getBounds();
+      vtkMath.normalize(normal);
+      let mapper = model.volumeMapper;
+      // get the mapper if the model actually has an actor
+      if (!model.volumeMapper.getInputData && model.volumeMapper.getMapper) {
+        mapper = model.volumeMapper.getMapper();
+        console.log("find mapper when given an actor");
+      }
+      let volumeCoordinateSpace = vec9toMat3(
+        mapper.getInputData().getDirection()
+      );
+      vtkMath.transpose3x3(volumeCoordinateSpace, volumeCoordinateSpace);
+      console.log("converting namespace", volumeCoordinateSpace, normal);
+      vtkMath.multiply3x3_vect3(volumeCoordinateSpace, normal, normal);
+      console.log("converted to", normal);
 
+      const bounds = model.volumeMapper.getBounds();
       // diagonal will be used as "width" of camera scene
       const diagonal = Math.sqrt(
         vtkMath.distance2BetweenPoints(
@@ -264,6 +276,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
           [bounds[1], bounds[3], bounds[5]]
         )
       );
+      // console.log("diagonal", diagonal, model.volumeMapper.getLength());
 
       // center will be used as initial focal point
       const center = [
@@ -271,6 +284,8 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
         (bounds[2] + bounds[3]) / 2.0,
         (bounds[4] + bounds[5]) / 2.0
       ];
+
+      // console.log("center", center, model.volumeMapper.getCenter());
 
       const angle = 90;
       // distance from camera to focal point
@@ -291,6 +306,8 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
 
       const viewUp = [0, 1, 0];
       transform.apply(viewUp);
+      vtkMath.multiply3x3_vect3(volumeCoordinateSpace, viewUp, viewUp);
+      console.log("converted viewup", viewUp);
 
       camera.setPosition(...cameraPos);
       camera.setDistance(dist);
@@ -337,3 +354,25 @@ export const newInstance = macro.newInstance(
 // ----------------------------------------------------------------------------
 
 export default Object.assign({ newInstance, extend });
+
+// function mat3ToMat4(mat3) {
+//   //prettier-ignore
+//   return [
+//     mat3[0], mat3[1], mat3[2], 0,
+//     mat3[3], mat3[4], mat3[5], 0,
+//     mat3[6], mat3[7], mat3[8], 0,
+//     0,0,0,1
+//   ]
+// }
+
+function vec9toMat3(vec9) {
+  if (vec9.length !== 9) {
+    throw Error("Array not length 9");
+  }
+  //prettier-ignore
+  return [
+    [vec9[0], vec9[1], vec9[2]],
+    [vec9[3], vec9[4], vec9[5]],
+    [vec9[6], vec9[7], vec9[8]],
+  ];
+}
