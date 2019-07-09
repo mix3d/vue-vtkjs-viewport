@@ -35,7 +35,6 @@ export default {
   props: {
     voi: {
       type: Object,
-      required: true,
       default: () => ({
         windowWidth: 0,
         windowCenter: 0

@@ -80,7 +80,6 @@ export default {
     actors: Array,
     painting: {
       type: Boolean,
-      required: true,
       default: false
     },
     paintFilterBackgroundImageData: Object,

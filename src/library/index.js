@@ -1,5 +1,6 @@
 import View2D from "./VTKViewport/View2D.vue";
 import View3D from "./VTKViewport/View3D.vue";
+import View from "./VTKViewport/View.vue";
 import ViewportOverlay from "./ViewportOverlay/ViewportOverlay.vue";
 import vtkInteractorStyleMPRSlice from "./VTKViewport/vtkInteractorStyleMPRSlice.js";
 import vtkInteractorStyleMPRWindowLevel from "./VTKViewport/vtkInteractorStyleMPRWindowLevel.js";
@@ -10,6 +11,7 @@ import getImageData from "./lib/getImageData.js";
 import loadImageData from "./lib/loadImageData.js";
 
 export {
+  View,
   View2D,
   View3D,
   ViewportOverlay,

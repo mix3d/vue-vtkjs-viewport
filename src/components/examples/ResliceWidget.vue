@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>This example demonstrates how to use the Crosshairs manipulator.</p>
+    <p>This example demonstrates how to implement the basic reslice widget.</p>
     <select v-model="selectedFile">
       <option v-for="file in files" :key="file">{{ file }}</option>
     </select>
@@ -13,13 +13,13 @@
       <button @click="reset">Reset</button>
       <div class="row">
         <div class="col">
-          <view-2d :volumes="volumes" :onCreated="onViewCreated(0)" />
+          <view-2d :volumes="volumes" :onCreated="saveView(0)" />
         </div>
         <div class="col">
-          <view-2d :volumes="volumes" :onCreated="onViewCreated(1)" />
+          <view-2d :volumes="volumes" :onCreated="saveView(1)" />
         </div>
         <div class="col">
-          <view-2d :volumes="volumes" :onCreated="onViewCreated(2)" />
+          <view-2d :volumes="volumes" :onCreated="saveView(2)" />
         </div>
       </div>
     </div>
@@ -32,7 +32,14 @@ import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
-import vtkMath from "vtk.js/Sources/Common/Core/Math";
+
+// import vtkOpenGLRenderWindow from 'vtk.js/Sources/Rendering/OpenGL/RenderWindow';
+import vtkResliceCursor from "vtk.js/Sources/Interaction/Widgets/ResliceCursor/ResliceCursor";
+import vtkResliceCursorLineRepresentation from "vtk.js/Sources/Interaction/Widgets/ResliceCursor/ResliceCursorLineRepresentation";
+import vtkResliceCursorWidget from "vtk.js/Sources/Interaction/Widgets/ResliceCursor/ResliceCursorWidget";
+// import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
+// import vtkRenderWindow from 'vtk.js/Sources/Rendering/Core/RenderWindow';
+// import vtkRenderWindowInteractor from 'vtk.js/Sources/Rendering/Core/RenderWindowInteractor';
 
 import {
   View2D,
@@ -63,11 +70,14 @@ export default {
     // unreactive local variables
     this.windows = [];
     this.files = files;
+    this.widgets = [];
+    this.widgetReps = [];
+    this.resliceCursor = vtkResliceCursor.newInstance();
   },
 
   methods: {
     reset() {},
-    onViewCreated(viewportIndex) {
+    saveView(viewportIndex) {
       return window => {
         this.windows[viewportIndex] = window;
 
@@ -89,53 +99,82 @@ export default {
 
         // TODO: adjust camera by position
 
-        istyle.setCallback(
-          getCrosshairCallbackForIndex(this.windows, viewportIndex)
+        // istyle.setCallback(
+        //   getCrosshairCallbackForIndex(this.windows, viewportIndex)
+        // );
+
+        // const svgWidgetManager = vtkSVGWidgetManager.newInstance();
+        // svgWidgetManager.setRenderer(renderer);
+        // svgWidgetManager.setScale(1);
+
+        // const crosshairsWidget = vtkSVGCrosshairsWidget.newInstance();
+
+        // svgWidgetManager.addWidget(crosshairsWidget);
+        // svgWidgetManager.render();
+
+        // window.svgWidgetManager = svgWidgetManager;
+        // window.svgWidgets = {
+        //   crosshairsWidget
+        // };
+
+        this.widgets[viewportIndex] = vtkResliceCursorWidget.newInstance();
+        this.widgetReps[
+          viewportIndex
+        ] = vtkResliceCursorLineRepresentation.newInstance();
+        this.widgets[viewportIndex].setWidgetRep(
+          this.widgetReps[viewportIndex]
         );
+        this.widgetReps[viewportIndex]
+          .getReslice()
+          .setInputData(window.volumes[0].getMapper().getInputData());
 
-        const svgWidgetManager = vtkSVGWidgetManager.newInstance();
-        svgWidgetManager.setRenderer(renderer);
-        svgWidgetManager.setScale(1);
+        this.widgetReps[viewportIndex]
+          .getCursorAlgorithm()
+          .setResliceCursor(this.resliceCursor);
 
-        const crosshairsWidget = vtkSVGCrosshairsWidget.newInstance();
-
-        svgWidgetManager.addWidget(crosshairsWidget);
-        svgWidgetManager.render();
-
-        window.svgWidgetManager = svgWidgetManager;
-        window.svgWidgets = {
-          crosshairsWidget
-        };
+        this.widgets[viewportIndex].setInteractor(
+          window.genericRenderWindow
+            .getRenderer()
+            .getRenderWindow()
+            .getInteractor()
+        );
 
         switch (viewportIndex) {
           default:
           case 0:
             //Axial
-            console.log("onViewCreated sliceNormal");
-            istyle.setSliceNormal([0, 0, 1], [0, 1, 0]);
-            // camera.setViewUp(0, 1, 0);
-            // camera.applyTransform(transform);
+            this.widgetReps[viewportIndex]
+              .getCursorAlgorithm()
+              .setReslicePlaneNormalToXAxis();
             break;
           case 1:
             // sagittal
-            istyle.setSliceNormal([1, 0, 0], [0, 0, -1]);
-            // camera.setViewUp(0, 0, -1);
+            this.widgetReps[viewportIndex]
+              .getCursorAlgorithm()
+              .setReslicePlaneNormalToYAxis();
             break;
           case 2:
             // Coronal
-            istyle.setSliceNormal([0, 1, 0], [0, 0, -1]);
-            // camera.setViewUp(0, 0, -1);
+            this.widgetReps[viewportIndex]
+              .getCursorAlgorithm()
+              .setReslicePlaneNormalToZAxis();
             break;
         }
-        let data = {
-          roll: camera.roll,
-          yaw: camera.yaw,
-          pitch: camera.pitch,
-          viewMatrix: camera.getViewMatrix(),
-          orientation: camera.getOrientation(),
-          camera
-        };
-        console.log("onViewCreated renderWindow rendering!", data);
+        this.widgets[viewportIndex].onInteractionEvent(() => {
+          this.widgets[0].render();
+          this.widgets[1].render();
+          this.widgets[2].render();
+        });
+        this.widgets[viewportIndex].setEnabled(true);
+        // let data = {
+        //   roll: camera.roll,
+        //   yaw: camera.yaw,
+        //   pitch: camera.pitch,
+        //   viewMatrix: camera.getViewMatrix(),
+        //   orientation: camera.getOrientation(),
+        //   camera
+        // };
+        // console.log("saveView renderWindow rendering!", data);
         renderWindow.render();
       };
     },
@@ -159,6 +198,7 @@ export default {
           // console.log("got data", data, volumeMapper, volumeActor);
           // this.volumes[0].getMapper().getInputData().getDirection()
           this.volumes = [volumeActor];
+          this.resliceCursor.setImage(data);
           this.loading = false;
         });
     }
@@ -167,18 +207,6 @@ export default {
     this.loadData();
   }
 };
-
-function getStackScrollCallbackForIndex(windows, index) {
-  return ({ worldPos }) => {
-    windows.forEach((window, viewportIndex) => {
-      if (viewportIndex !== index) {
-        const renderWindow = window.genericRenderWindow.getRenderWindow();
-        const istyle = renderWindow.getInteractor.getInteractorStyle();
-        const sliceNormal = istyle.getSliceNormal();
-      }
-    });
-  };
-}
 
 function getCrosshairCallbackForIndex(windows, index) {
   return ({ worldPos }) => {

@@ -1,13 +1,15 @@
 import BasicVolume from "./BasicVolume.vue";
 import MPRCrosshairs from "./MPRCrosshairs.vue";
 import PaintWidget from "./PaintWidget.vue";
+import SlicePlanes from "./SlicePlanes.vue";
+import ResliceWidget from "./ResliceWidget.vue";
 
 export const files = [
   "headsq.vti",
   "LIDC2.vti",
   "vmhead2-small.vti",
-  "vmhead2-large.vti",
-]
+  "vmhead2-large.vti"
+];
 
 export default [
   {
@@ -30,5 +32,19 @@ export default [
     description:
       "Demonstrates how to set up the Crosshairs interactor style and SVG Widget",
     component: MPRCrosshairs
+  },
+  {
+    title: "MultiSlicePlanes",
+    url: "sliceplanes",
+    description:
+      "Demonstrates how to set up the Crosshairs interactor style and SVG Widget",
+    component: SlicePlanes
+  },
+  {
+    title: "Reslice Widget",
+    url: "reslice",
+    description:
+      "Implementing the ResliceWidget based on VTK examples but with a real volume",
+    component: ResliceWidget
   }
 ];
