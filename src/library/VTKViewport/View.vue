@@ -89,8 +89,9 @@ export default {
     interactor.setInteractorStyle(istyle);
     */
 
-    // TODO: Not sure why this is necessary to force the initial draw
-    // this.genericRenderWindow.resize();
+    // Resize on initial draw to get the right size from the parent
+    this.onResize();
+
     if (this.onCreated) {
       /**
        * Note: The contents of this Object are

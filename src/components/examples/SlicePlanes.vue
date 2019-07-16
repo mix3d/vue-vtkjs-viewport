@@ -18,7 +18,6 @@
     <div v-else>
       <div>
         <table>
-          <tbody>
             <tr>
               <td>Slice I</td>
               <td>
@@ -31,6 +30,7 @@
                   value="30"
                   v-model="sliceI.value"
                 />
+                <span>{{sliceI.value}}</span>
               </td>
             </tr>
             <tr>
@@ -44,6 +44,7 @@
                   step="1"
                   v-model="sliceJ.value"
                 />
+                <span>{{sliceJ.value}}</span>
               </td>
             </tr>
             <tr>
@@ -57,6 +58,7 @@
                   step="1"
                   v-model="sliceK.value"
                 />
+                <span>{{sliceK.value}}</span>
               </td>
             </tr>
             <tr>
@@ -85,7 +87,20 @@
                 />
               </td>
             </tr>
-          </tbody>
+            <tr>
+              <td>Slice Rotate</td>
+              <td>
+                <input
+                  class="rotate"
+                  type="range"
+                  :min="-90"
+                  :max="90"
+                  step="1"
+                  v-model="rotate"
+                />
+                 <span>{{rotate}} degrees</span>
+              </td>
+            </tr>
         </table>
       </div>
       <!-- <div class="row">
@@ -121,11 +136,13 @@
 </template>
 
 <script>
-import { View2D, View } from "@/library";
+import { View2D, View, vtkInteractorStyleMPRCrosshairs } from "@/library";
 
 import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
+
+import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 
 import vtkImageMapper from "vtk.js/Sources/Rendering/Core/ImageMapper";
 import vtkImageSlice from "vtk.js/Sources/Rendering/Core/ImageSlice";
@@ -168,7 +185,8 @@ export default {
         value: 30
       },
       loading: true,
-      selectedFile: files[0]
+      selectedFile: files[0],
+      rotate: 0,
     };
   },
   computed: {
@@ -217,9 +235,37 @@ export default {
       handler(newSlice) {
         this.imageActors.K.getMapper().setJSlice(Number(newSlice.value));
         this.rerenderAllViewports();
-      }
+      },
+      deep: true
     },
-    deep: true
+    window:{
+      handler(newWindow){
+        this.updateColorWindow(newWindow.value)
+      },
+      deep:true
+    },
+    level: {
+      handler(newLevel){
+        this.updateColorLevel(newLevel.value)
+      },
+      deep:true
+    },
+    rotate(newRot){
+      let component = this.components[2]
+
+      const renderWindow = component.genericRenderWindow.getRenderWindow();
+      const istyle = renderWindow
+                      .getInteractor()
+                      .getInteractorStyle();
+      const transform = vtkMatrixBuilder
+          .buildFromDegree()
+          .rotateZ(Number(newRot));
+      let normal = [1,0,0];
+      transform.apply(normal);
+      console.log("newnormal", normal)
+      istyle.setSliceNormal(normal, [0, 0, -1]);
+      renderWindow.render()
+    }
   },
   methods: {
     setWidget(event) {
@@ -266,6 +312,14 @@ export default {
             break;
           case 2:
             // Coronal
+            renderWindow
+              .getInteractor()
+              .getInteractorStyle()
+              .setVolumeMapper(null);
+            const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
+            renderWindow.getInteractor().setInteractorStyle(istyle);
+            istyle.setVolumeMapper(component.volumes[0]);
+            istyle.setSliceNormal([1, 0, 0], [0, 0, -1]);
             break;
           case 3:
             // 3d view
@@ -315,7 +369,8 @@ export default {
             .getRGBTransferFunction(0);
           rgbTransferFunction.setMappingRange(500, 3000);
 
-          //update slice min/max values for interface
+          // update slice min/max values for interface
+          // Crate imageMapper for I,J,K planes
           const dataRange = data
             .getPointData()
             .getScalars()
@@ -336,7 +391,7 @@ export default {
           });
           this.window = {
             min: 0,
-            max: dataRange[1],
+            max: dataRange[1] * 2,
             value: dataRange[1]
           };
           this.level = {
@@ -358,4 +413,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.col{
+  max-height: 400px;
+}
+</style>

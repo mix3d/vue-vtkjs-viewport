@@ -258,7 +258,6 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       // get the mapper if the model is actually the actor, not the mapper
       if (!model.volumeMapper.getInputData && model.volumeMapper.getMapper) {
         mapper = model.volumeMapper.getMapper();
-        console.log("find mapper when given an actor");
       }
       let volumeCoordinateSpace = vec9toMat3(
         mapper.getInputData().getDirection()
