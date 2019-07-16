@@ -18,3 +18,9 @@ export default {
   }
 };
 </script>
+
+<style>
+.about {
+  max-height: 90vh;
+}
+</style>

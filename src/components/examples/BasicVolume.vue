@@ -21,7 +21,7 @@
         <button className="btn btn-primary" @click="() => setWLPreset('BONE')">
           Bone
         </button>
-        <button className="btn btn-primary" @click="() => setWLPreset('BONE')">
+        <button className="btn btn-primary" @click="() => setWLPreset('HEAD')">
           Head
         </button>
       </div>

@@ -3,6 +3,7 @@ import MPRCrosshairs from "./MPRCrosshairs.vue";
 import PaintWidget from "./PaintWidget.vue";
 import SlicePlanes from "./SlicePlanes.vue";
 import ResliceWidget from "./ResliceWidget.vue";
+import DicomLoader from "./DicomLoader.vue";
 
 export const files = [
   "headsq.vti",
@@ -46,5 +47,11 @@ export default [
     description:
       "Implementing the ResliceWidget based on VTK examples but with a real volume",
     component: ResliceWidget
+  },
+  {
+    title: "Dicom Loader",
+    url: "dicom",
+    description: "turn Dicom slices into a vtk volume",
+    component: DicomLoader
   }
 ];

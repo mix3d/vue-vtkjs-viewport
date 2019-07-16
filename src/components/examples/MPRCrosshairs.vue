@@ -111,20 +111,15 @@ export default {
           default:
           case 0:
             //Axial
-            console.log("onViewCreated sliceNormal");
             istyle.setSliceNormal([0, 0, 1], [0, 1, 0]);
-            // camera.setViewUp(0, 1, 0);
-            // camera.applyTransform(transform);
             break;
           case 1:
             // sagittal
             istyle.setSliceNormal([1, 0, 0], [0, 0, -1]);
-            // camera.setViewUp(0, 0, -1);
             break;
           case 2:
             // Coronal
             istyle.setSliceNormal([0, 1, 0], [0, 0, -1]);
-            // camera.setViewUp(0, 0, -1);
             break;
         }
         let data = {
