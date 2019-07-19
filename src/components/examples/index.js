@@ -3,6 +3,7 @@ import MPRCrosshairs from "./MPRCrosshairs.vue";
 import PaintWidget from "./PaintWidget.vue";
 import SlicePlanes from "./SlicePlanes.vue";
 import ResliceWidget from "./ResliceWidget.vue";
+import MPRPlanes from "./MPRPlanes.vue";
 import DicomLoader from "./DicomLoader.vue";
 
 export const files = [
@@ -53,5 +54,11 @@ export default [
     url: "dicom",
     description: "turn Dicom slices into a vtk volume",
     component: DicomLoader
+  },
+  {
+    title: "Full MPR Example",
+    url: "mpr",
+    description: "Example of a fully functional MPR implementation",
+    component: MPRPlanes
   }
 ];
