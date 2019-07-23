@@ -7,20 +7,27 @@
 
 <script>
 import vtkGenericRenderWindow from "vtk.js/Sources/Rendering/Misc/GenericRenderWindow";
+import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
+
 import vtkWidgetManager from "vtk.js/Sources/Widgets/Core/WidgetManager";
 import vtkPaintFilter from "vtk.js/Sources/Filters/General/PaintFilter";
 import vtkPaintWidget from "vtk.js/Sources/Widgets/Widgets3D/PaintWidget";
+import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import { ViewTypes } from "vtk.js/Sources/Widgets/Core/WidgetManager/Constants";
+
+import { quat, vec3 } from "gl-matrix";
+
 // Use modified MPRSlice interactor
 //import vtkInteractorStyleMPRSlice from 'vtk.js/Sources/Interaction/Style/InteractorStyleMPRSlice';
 import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice";
 import { createSub } from "../lib/createSub.js";
+import { degrees2radians } from "../lib/math/angles.js";
 import createLabelPipeline from "./createLabelPipeline";
 
 import ViewportOverlay from "../ViewportOverlay/ViewportOverlay.vue";
 
 export default {
-  name: "view-2d",
+  name: "view-2d-mpr",
   components: { ViewportOverlay },
   props: {
     volumes: { type: Array, required: true },
@@ -96,6 +103,8 @@ export default {
         .getInteractor()
         .getInteractorStyle()
         .setSliceNormal(this.cachedSlicePlane, this.cachedSliceViewUp);
+
+      console.log("Slice Plane info", this.cachedSlicePlane, this.cachedSliceViewUp)
       renderWindow.render()
     }
   },
@@ -107,35 +116,35 @@ export default {
 
     // Calculate the new normals after applying rotations to the untouched originals
     slicePlaneNormal(newNormal){
-      const transform = vtkMatrixBuilder
-          .buildFromDegree()
-          .rotate(this.cachedSliceViewUp, Number(this.slicePlaneRotation));
-      this.cachedSlicePlane = [...newNormal];
-      transform.apply(this.cachedSlicePlane);
+      const q4 = quat.create();
+      quat.setAxisAngle(q4, this.cachedSliceViewUp, degrees2radians(this.slicePlaneRotation));
+      quat.normalize(q4, q4);
+      vec3.transformQuat(this.cachedSlicePlane, newNormal, q4);
+
       this.updateSlicePlane();
     },
     slicePlaneRotation(newRotation){
-      const transform = vtkMatrixBuilder
-          .buildFromDegree()
-          .rotate(this.cachedSliceViewUp, Number(newRotation));
-      this.cachedSlicePlane = [...this.slicePlaneNormal];
-      transform.apply(this.cachedSlicePlane);
+      const q4 = quat.create();
+      quat.setAxisAngle(q4, this.cachedSliceViewUp, degrees2radians(newRotation));
+      quat.normalize(q4, q4);
+      vec3.transformQuat(this.cachedSlicePlane, this.slicePlaneNormal, q4);
+
       this.updateSlicePlane();
     },
     sliceViewUp(newUp){
-      const transform = vtkMatrixBuilder
-          .buildFromDegree()
-          .rotate(this.cachedSlicePlane, Number(this.sliceViewUpRotation));
-      this.cachedSliceViewUp = [...newUp];
-      transform.apply(this.cachedSliceViewUp);
+      const q4 = quat.create();
+      quat.setAxisAngle(q4, this.cachedSlicePlane, degrees2radians(this.sliceViewUpRotation));
+      quat.normalize(q4, q4);
+      vec3.transformQuat(this.cachedSliceViewUp, newUp, q4);
+
       this.updateSlicePlane();
     },
     sliceViewUpRotation(newUpRotation){
-      const transform = vtkMatrixBuilder
-          .buildFromDegree()
-          .rotate(this.cachedSlicePlane, Number(newUpRotation));
-      this.cachedSliceViewUp = [...this.sliceViewUp];
-      transform.apply(this.cachedSliceViewUp);
+      const q4 = quat.create();
+      quat.setAxisAngle(q4, this.cachedSlicePlane, degrees2radians(newUpRotation));
+      quat.normalize(q4, q4);
+      vec3.transformQuat(this.cachedSliceViewUp, this.sliceViewUp, q4);
+
       this.updateSlicePlane();
     },
 

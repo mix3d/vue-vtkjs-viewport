@@ -13,13 +13,13 @@
       <button @click="reset">Reset</button>
       <div class="row">
         <div class="col">
-          <view-2d :volumes="volumes" :onCreated="saveView(0)" />
+          <view-2d :volumes="volumes" :onCreated="saveView(0)" :parallel="true" />
         </div>
         <div class="col">
-          <view-2d :volumes="volumes" :onCreated="saveView(1)" />
+          <view-2d :volumes="volumes" :onCreated="saveView(1)" :parallel="true" />
         </div>
         <div class="col">
-          <view-2d :volumes="volumes" :onCreated="saveView(2)" />
+          <view-2d :volumes="volumes" :onCreated="saveView(2)" :parallel="true" />
         </div>
       </div>
     </div>
@@ -85,37 +85,21 @@ export default {
         const renderer = window.genericRenderWindow.getRenderer();
         const camera = renderer.getActiveCamera();
 
-        // TODO: This is a hacky workaround because disabling the vtkInteractorStyleMPRSlice is currently
-        // broken. The camera.onModified is never removed.
+        camera.setParallelProjection(true)
+
+        // // TODO: This is a hacky workaround because disabling the vtkInteractorStyleMPRSlice is currently
+        // // broken. The camera.onModified is never removed.
         renderWindow
           .getInteractor()
           .getInteractorStyle()
-          .setVolumeMapper(null);
+          .setVolumeMapper(window.volumes[0]);
 
-        const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
+        // const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
 
-        renderWindow.getInteractor().setInteractorStyle(istyle);
-        istyle.setVolumeMapper(window.volumes[0]);
+        // renderWindow.getInteractor().setInteractorStyle(istyle);
 
-        // TODO: adjust camera by position
+        // istyle.setVolumeMapper(window.volumes[0]);
 
-        // istyle.setCallback(
-        //   getCrosshairCallbackForIndex(this.windows, viewportIndex)
-        // );
-
-        // const svgWidgetManager = vtkSVGWidgetManager.newInstance();
-        // svgWidgetManager.setRenderer(renderer);
-        // svgWidgetManager.setScale(1);
-
-        // const crosshairsWidget = vtkSVGCrosshairsWidget.newInstance();
-
-        // svgWidgetManager.addWidget(crosshairsWidget);
-        // svgWidgetManager.render();
-
-        // window.svgWidgetManager = svgWidgetManager;
-        // window.svgWidgets = {
-        //   crosshairsWidget
-        // };
 
         this.widgets[viewportIndex] = vtkResliceCursorWidget.newInstance();
         this.widgetReps[
@@ -166,6 +150,8 @@ export default {
           this.widgets[2].render();
         });
         this.widgets[viewportIndex].setEnabled(true);
+
+        renderer.resetCamera();
         // let data = {
         //   roll: camera.roll,
         //   yaw: camera.yaw,

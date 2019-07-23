@@ -1,3 +1,4 @@
+import View2dMPR from "./VTKViewport/2DMPRView.vue";
 import View2D from "./VTKViewport/View2D.vue";
 import View3D from "./VTKViewport/View3D.vue";
 import View from "./VTKViewport/View.vue";
@@ -11,6 +12,7 @@ import getImageData from "./lib/getImageData.js";
 import loadImageData from "./lib/loadImageData.js";
 
 export {
+  View2dMPR,
   View,
   View2D,
   View3D,

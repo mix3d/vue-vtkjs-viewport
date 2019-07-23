@@ -57,6 +57,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   model.zoomManipulator = vtkMouseCameraTrackballZoomManipulator.newInstance({
     button: 3
   });
+
   model.scrollManipulator = vtkMouseRangeManipulator.newInstance({
     scrollEnabled: true,
     dragEnabled: false
@@ -252,8 +253,12 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
 
+    //copy arguments so we don't cause sideeffects
+    const _normal = [...normal]
+    const _viewUp = [...viewUp]
+
     if (model.volumeMapper) {
-      vtkMath.normalize(normal);
+      vtkMath.normalize(_normal);
       let mapper = model.volumeMapper;
       // get the mapper if the model is actually the actor, not the mapper
       if (!model.volumeMapper.getInputData && model.volumeMapper.getMapper) {
@@ -265,7 +270,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       // Transpose the volume's coordinate space to create a transformation matrix
       vtkMath.transpose3x3(volumeCoordinateSpace, volumeCoordinateSpace);
       // Convert the provided normal into the volume's space
-      vtkMath.multiply3x3_vect3(volumeCoordinateSpace, normal, normal);
+      vtkMath.multiply3x3_vect3(volumeCoordinateSpace, _normal, _normal);
 
       const bounds = model.volumeMapper.getBounds();
       // diagonal will be used as "width" of camera scene
@@ -291,9 +296,9 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       const dist = diagonal / (2 * Math.tan((angle / 360) * Math.PI));
 
       const cameraPos = [
-        center[0] - normal[0] * dist,
-        center[1] - normal[1] * dist,
-        center[2] - normal[2] * dist
+        center[0] - _normal[0] * dist,
+        center[1] - _normal[1] * dist,
+        center[2] - _normal[2] * dist
       ];
 
       // set viewUp based on DOP rotation
@@ -305,13 +310,13 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
 
       // const viewUp = [0, 1, 0];
       // transform.apply(viewUp);
-      vtkMath.multiply3x3_vect3(volumeCoordinateSpace, viewUp, viewUp);
+      vtkMath.multiply3x3_vect3(volumeCoordinateSpace, _viewUp, _viewUp);
 
       camera.setPosition(...cameraPos);
       camera.setDistance(dist);
       // should be set after pos and distance
-      camera.setDirectionOfProjection(...normal);
-      camera.setViewUp(...viewUp);
+      camera.setDirectionOfProjection(..._normal);
+      camera.setViewUp(..._viewUp);
       camera.setViewAngle(angle);
       camera.setClippingRange(dist, dist + 0.1);
 

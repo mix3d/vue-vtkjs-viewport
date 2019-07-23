@@ -30,6 +30,7 @@ export default {
   components: { ViewportOverlay },
   props: {
     volumes: { type: Array, required: true },
+    parallel: { type: Boolean, default: false},
     actors: Array,
     painting: { type: Boolean, default: false },
     paintFilterBackgroundImageData: Object,
@@ -164,6 +165,10 @@ export default {
 
     // add the current volumes to the vtk renderer
     this.updateVolumesForRendering(this.volumes);
+
+    if(this.parallel) {
+      // this.renderer.getActiveCamera().setParallelProjection(this.parallel);
+    }
 
     // TODO: Not sure why this is necessary to force the initial draw
     this.genericRenderWindow.resize();

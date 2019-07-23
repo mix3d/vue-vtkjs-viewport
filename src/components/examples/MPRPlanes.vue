@@ -2,11 +2,7 @@
   <div>
     <h2>MPR Planes</h2>
     <p>
-      This demo mirrors the example from
-      <a
-        href="https://kitware.github.io/vtk-js/examples/MultiSliceImageMapper.html"
-        >https://kitware.github.io/vtk-js/examples/MultiSliceImageMapper.html</a
-      >
+      Attempts at final integration of MPR with all the bells and whistles.
     </p>
     <select v-model="selectedFile">
       <option v-for="file in files" :key="file">{{ file }}</option>
@@ -18,7 +14,19 @@
     <div v-else>
       <div>
         <table>
-            <tr>
+          <tr>
+            <td>
+              <button @click="selectTool('LEVEL')">
+                <img src="https://img.icons8.com/material-rounded/344/contrast.png" />
+                Level
+              </button>
+              <button @click="selectTool('SELECT')">
+                <img src="https://img.icons8.com/material/344/define-location.png" />
+                Select
+              </button>
+            </td>
+          </tr>
+            <!-- <tr>
               <td>Color level</td>
               <td>
                 <input
@@ -43,39 +51,63 @@
                   v-model="window.value"
                 />
               </td>
-            </tr>
+            </tr> -->
             <tr>
-              <td>Slice Rotate</td>
-              <td>
-                <input
-                  class="rotate"
-                  type="range"
-                  :min="-90"
-                  :max="90"
-                  step="1"
-                  v-model="rotate"
-                />
-                 <span>{{rotate}} degrees</span>
+              <td v-for="(view, key) in viewDataArray" :key="key">
+                <table>
+                  <tr>
+                    <td><strong>{{key}}</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Rotate SlicePlane</td>
+                    <td><input
+                        class="rotate"
+                        type="range"
+                        :min="-90"
+                        :max="90"
+                        step="1"
+                        v-model.number="view.slicePlaneRotation"
+                      />
+                      <span>{{view.slicePlaneRotation}}&deg;</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Rotate ViewUp</td>
+                    <td><input
+                        class="rotate"
+                        type="range"
+                        :min="-90"
+                        :max="90"
+                        step="1"
+                        v-model.number="view.sliceViewUpRotation"
+                      />
+                      <span>{{view.sliceViewUpRotation}}&deg;</span>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
         </table>
       </div>
       <div class="row">
         <div class="col">
-          <view-2d
+          <view-2d-mpr
             :volumes="volumes"
+            v-bind="top"
             :onCreated="this.saveComponentReference(0)"
           />
         </div>
         <div class="col">
-          <view-2d
+          <view-2d-mpr
             :volumes="volumes"
+            v-bind="left"
             :onCreated="this.saveComponentReference(1)"
           />
         </div>
         <div class="col">
-          <view-2d
+          <view-2d-mpr
             :volumes="volumes"
+            v-bind="front"
             :onCreated="this.saveComponentReference(2)"
           />
         </div>
@@ -85,7 +117,7 @@
 </template>
 
 <script>
-import { View2D, View, vtkInteractorStyleMPRCrosshairs } from "@/library";
+import { View2dMPR, View, vtkInteractorStyleMPRCrosshairs } from "@/library";
 
 import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
@@ -100,7 +132,7 @@ import { files } from "@/components/examples";
 
 export default {
   components: {
-    "view-2d": View2D,
+    "view-2d-mpr": View2dMPR,
     "view-generic": View
   },
   data() {
@@ -121,6 +153,24 @@ export default {
       loading: true,
       selectedFile: files[0],
       rotate: 0,
+      top: {
+        slicePlaneNormal: [0,0,1],
+        sliceViewUp: [0,1,0],
+        slicePlaneRotation: 0,
+        sliceViewUpRotation: 0,
+      },
+      left: {
+        slicePlaneNormal: [1,0,0],
+        sliceViewUp: [0,0,-1],
+        slicePlaneRotation: 0,
+        sliceViewUpRotation: 0,
+      },
+      front: {
+        slicePlaneNormal: [0,1,0],
+        sliceViewUp: [0,0,-1],
+        slicePlaneRotation: 0,
+        sliceViewUpRotation: 0,
+      },
     };
   },
   computed: {
@@ -130,6 +180,9 @@ export default {
         windowCenter: Number(this.level.value),
         windowWidth: Number(this.window.value)
       };
+    },
+    viewDataArray(){
+      return {top:this.top, left:this.left, front:this.front};
     },
     dataDetails() {
       return {
@@ -157,24 +210,35 @@ export default {
       },
       deep:true
     },
-    rotate(newRot){
-      let component = this.components[2]
+    top(newRot){
+      console.log("top changed")
+      // let component = this.components[2]
 
-      const renderWindow = component.genericRenderWindow.getRenderWindow();
-      const istyle = renderWindow
-                      .getInteractor()
-                      .getInteractorStyle();
-      const transform = vtkMatrixBuilder
-          .buildFromDegree()
-          .rotateZ(Number(newRot));
-      let normal = [0,1,0];
-      transform.apply(normal);
-      console.log("newnormal", normal)
-      istyle.setSliceNormal(normal, [0, 0, -1]);
-      renderWindow.render()
+      // const renderWindow = component.genericRenderWindow.getRenderWindow();
+      // const istyle = renderWindow
+      //                 .getInteractor()
+      //                 .getInteractorStyle();
+      // const transform = vtkMatrixBuilder
+      //     .buildFromDegree()
+      //     .rotateZ(Number(newRot));
+      // let normal = [0,1,0];
+      // transform.apply(normal);
+      // console.log("newnormal", normal)
+      // istyle.setSliceNormal(normal, [0, 0, -1]);
+      // renderWindow.render()
     }
   },
   methods: {
+    selectTool(tool){
+      switch(tool)
+      {
+        case "LEVEL":
+          break;
+        case "SELECT":
+          break;
+      }
+    },
+
     setWidget(event) {
       const widgetId = event.target.value;
 
@@ -220,15 +284,15 @@ export default {
           default:
           case 0:
             //Axial
-            istyle.setSliceNormal([0, 0, 1], [0, 1, 0]);
+            // istyle.setSliceNormal(this.top.normal, [0, 1, 0]);
             break;
           case 1:
             // sagittal
-            istyle.setSliceNormal([1, 0, 0], [0, 0, -1]);
+            // istyle.setSliceNormal([1, 0, 0], [0, 0, -1]);
             break;
           case 2:
             // Coronal
-            istyle.setSliceNormal([0, 1, 0], [0, 0, -1]);
+            // istyle.setSliceNormal([0, 1, 0], [0, 0, -1]);
             break;
           case 3:
             // 3d view
@@ -308,5 +372,13 @@ export default {
 <style scoped>
 .col{
   max-height: 400px;
+}
+
+button > img {
+  vertical-align: middle;
+  height: 20px;
+}
+button + button {
+  margin-left: 8px;
 }
 </style>
