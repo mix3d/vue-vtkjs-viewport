@@ -406,6 +406,12 @@ export default {
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
 
+    this.genericRenderWindow.setContainer(null);
+    this.genericRenderWindow.getOpenGLRenderWindow().delete();
+    this.genericRenderWindow.delete()
+
+    delete this.genericRenderWindow;
+
     Object.keys(this.subs).forEach(k => {
       this.subs[k].unsubscribe();
     });

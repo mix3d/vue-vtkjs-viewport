@@ -358,16 +358,6 @@ export const newInstance = macro.newInstance(
 
 export default Object.assign({ newInstance, extend });
 
-// function mat3ToMat4(mat3) {
-//   //prettier-ignore
-//   return [
-//     mat3[0], mat3[1], mat3[2], 0,
-//     mat3[3], mat3[4], mat3[5], 0,
-//     mat3[6], mat3[7], mat3[8], 0,
-//     0,0,0,1
-//   ]
-// }
-
 function vec9toMat3(vec9) {
   if (vec9.length !== 9) {
     throw Error("Array not length 9");
