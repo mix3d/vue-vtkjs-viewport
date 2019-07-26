@@ -32,11 +32,15 @@ export default {
   props: {
     volumes: { type: Array, required: true },
     actors: Array,
-
+    activeTool: {type: String, default: "LEVEL"},
+    //Slice Plane
     slicePlaneNormal: { type: Array, default(){ return [0,0,1] }},
-    slicePlaneRotation: { type: Number, default: 0},
+    slicePlaneXRotation: { type: Number, default: 0},
+    slicePlaneYRotation: { type: Number, default: 0},
+    // Camera view Up
     sliceViewUp: { type: Array, default(){ return [0,1,0] }},
-    sliceViewUpRotation: { type: Number, default: 0},
+    //0,90,180,270 rotation around the view axis
+    viewRotation: {type: Number, default: 0},
 
     painting: { type: Boolean, default: false },
     paintFilterBackgroundImageData: Object,
@@ -44,7 +48,9 @@ export default {
     onPaint: Function,
     onPaintStart: Function,
     onPaintEnd: Function,
+
     interactorStyleVolumeMapper: Object,
+
     dataDetails: Object,
     onCreated: Function,
     onDestroyed: Function,
@@ -97,14 +103,57 @@ export default {
       }
       this.renderWindow.render();
     },
-    updateSlicePlane(){
+    updateSlicePlane(ops={}){
+      // TODO: optimize so you don't have to calculate EVERYTHING every time?
+
+      const input = {
+        //defaults
+        slicePlaneNormal: this.slicePlaneNormal,
+        sliceViewUp: this.sliceViewUp,
+        sliceXRot: this.slicePlaneXRotation,
+        sliceYRot: this.slicePlaneYRotation,
+        viewRotation: this.viewRotation,
+        //merge / overwrite function inputs
+        ...ops
+      }
+      // rotate around the vector of the cross product of the plane and viewup as the X component
+      let sliceXRot = []
+      vec3.cross(sliceXRot, input.sliceViewUp, input.slicePlaneNormal)
+      vec3.normalize(sliceXRot, sliceXRot);
+      const xQuat = quat.create();
+      quat.setAxisAngle(xQuat, sliceXRot, degrees2radians(input.sliceXRot));
+      quat.normalize(xQuat, xQuat);
+
+      // rotate the viewUp vector as the Y component
+      let sliceYRot = this.sliceViewUp
+      const yQuat = quat.create();
+      quat.setAxisAngle(yQuat, input.sliceViewUp, degrees2radians(input.sliceYRot));
+      quat.normalize(yQuat, yQuat);
+
+      // Rotate the slicePlaneNormal using the x & y rotations.
+      const planeQuat = quat.create();
+      quat.add(planeQuat, xQuat, yQuat);
+      vec3.transformQuat(this.cachedSlicePlane, this.slicePlaneNormal, planeQuat);
+
+      // Rotate the viewUp in 90 degree increments
+      const viewRotQuat = quat.create();
+      // Use - degrees since the axis of rotation should really be the direction of projection, which is the negative of the plane normal
+      quat.setAxisAngle(viewRotQuat, this.cachedSlicePlane, degrees2radians(-input.viewRotation));
+      quat.normalize(viewRotQuat, viewRotQuat);
+
+      // rotate the ViewUp with the x and z rotations
+      const viewUpQuat = quat.create();
+      quat.add(viewUpQuat, xQuat, viewRotQuat);
+      vec3.transformQuat(this.cachedSliceViewUp, this.sliceViewUp, viewRotQuat);
+
+      // update the view's slice
+      // FIXME: Store/remember the slice currently looked at, so you rotate around that location instead of the volume center
       const renderWindow = this.genericRenderWindow.getRenderWindow();
       renderWindow
         .getInteractor()
         .getInteractorStyle()
         .setSliceNormal(this.cachedSlicePlane, this.cachedSliceViewUp);
 
-      console.log("Slice Plane info", this.cachedSlicePlane, this.cachedSliceViewUp)
       renderWindow.render()
     }
   },
@@ -115,37 +164,29 @@ export default {
     },
 
     // Calculate the new normals after applying rotations to the untouched originals
-    slicePlaneNormal(newNormal){
-      const q4 = quat.create();
-      quat.setAxisAngle(q4, this.cachedSliceViewUp, degrees2radians(this.slicePlaneRotation));
-      quat.normalize(q4, q4);
-      vec3.transformQuat(this.cachedSlicePlane, newNormal, q4);
-
+    slicePlaneNormal(){
       this.updateSlicePlane();
     },
-    slicePlaneRotation(newRotation){
-      const q4 = quat.create();
-      quat.setAxisAngle(q4, this.cachedSliceViewUp, degrees2radians(newRotation));
-      quat.normalize(q4, q4);
-      vec3.transformQuat(this.cachedSlicePlane, this.slicePlaneNormal, q4);
-
+    slicePlaneXRotation(){
+      this.updateSlicePlane()
+    },
+    slicePlaneYRotation(){
       this.updateSlicePlane();
     },
-    sliceViewUp(newUp){
-      const q4 = quat.create();
-      quat.setAxisAngle(q4, this.cachedSlicePlane, degrees2radians(this.sliceViewUpRotation));
-      quat.normalize(q4, q4);
-      vec3.transformQuat(this.cachedSliceViewUp, newUp, q4);
-
+    sliceViewUp(){
       this.updateSlicePlane();
     },
-    sliceViewUpRotation(newUpRotation){
-      const q4 = quat.create();
-      quat.setAxisAngle(q4, this.cachedSlicePlane, degrees2radians(newUpRotation));
-      quat.normalize(q4, q4);
-      vec3.transformQuat(this.cachedSliceViewUp, this.sliceViewUp, q4);
-
+    viewRotation(){
       this.updateSlicePlane();
+    },
+
+    activeTool(newTool, oldTool){
+      switch(newTool){
+        case 'LEVEL':
+          break;
+        case 'SELECT':
+          break;
+      }
     },
 
     paintFilterBackgroundImageData(newBGImage, oldBGImage) {
@@ -366,7 +407,7 @@ export default {
       this.interactorStyleVolumeMapper || this.volumes[0].getMapper();
 
     istyle.setVolumeMapper(istyleVolumeMapper);
-    istyle.setSliceNormal([0, 0, 1]);
+    // istyle.setSliceNormal([0, 0, 1]);
 
     //start with the middle slice
     const range = istyle.getSliceRange();

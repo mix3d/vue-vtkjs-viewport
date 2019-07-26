@@ -13,102 +13,68 @@
     </div>
     <div v-else>
       <div>
-        <table>
-          <tr>
-            <td>
-              <button @click="selectTool('LEVEL')">
-                <img src="https://img.icons8.com/material-rounded/344/contrast.png" />
-                Level
-              </button>
-              <button @click="selectTool('SELECT')">
-                <img src="https://img.icons8.com/material/344/define-location.png" />
-                Select
-              </button>
-            </td>
-          </tr>
-            <!-- <tr>
-              <td>Color level</td>
-              <td>
-                <input
-                  class="colorLevel"
-                  type="range"
-                  :min="level.min"
-                  :max="level.max"
-                  step="1"
-                  v-model="level.value"
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>ColorWindow</td>
-              <td>
-                <input
-                  class="colorWindow"
-                  type="range"
-                  :min="window.min"
-                  :max="window.max"
-                  step="1"
-                  v-model="window.value"
-                />
-              </td>
-            </tr> -->
-            <tr>
-              <td v-for="(view, key) in viewDataArray" :key="key">
-                <table>
-                  <tr>
-                    <td><strong>{{key}}</strong></td>
-                  </tr>
-                  <tr>
-                    <td>Rotate SlicePlane</td>
-                    <td><input
-                        class="rotate"
-                        type="range"
-                        :min="-90"
-                        :max="90"
-                        step="1"
-                        v-model.number="view.slicePlaneRotation"
-                      />
-                      <span>{{view.slicePlaneRotation}}&deg;</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Rotate ViewUp</td>
-                    <td><input
-                        class="rotate"
-                        type="range"
-                        :min="-90"
-                        :max="90"
-                        step="1"
-                        v-model.number="view.sliceViewUpRotation"
-                      />
-                      <span>{{view.sliceViewUpRotation}}&deg;</span>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-        </table>
+        <button @click="selectTool('LEVEL')" :class="{active:activeTool==='LEVEL'}">
+          <img src="https://img.icons8.com/material-rounded/344/contrast.png" />
+          Level
+        </button>
+        <button @click="selectTool('SELECT')" :class="{active:activeTool==='SELECT'}">
+          <img src="https://img.icons8.com/material/344/define-location.png" />
+          Select
+        </button>
       </div>
       <div class="row">
-        <div class="col">
+        <div class="col" v-for="(view, key) in viewDataArray" :key="key">
+          <table>
+              <tr>
+                <td><strong>{{key}}</strong></td>
+              </tr>
+              <tr>
+                <td>Rotate SlicePlane X</td>
+                <td><input
+                    class="rotate"
+                    type="range"
+                    :min="-90"
+                    :max="90"
+                    step="1"
+                    v-model.number="view.slicePlaneXRotation"
+                  />
+                  <span>{{view.slicePlaneXRotation}}&deg;</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Rotate SlicePlane Y</td>
+                <td><input
+                    class="rotate"
+                    type="range"
+                    :min="-90"
+                    :max="90"
+                    step="1"
+                    v-model.number="view.slicePlaneYRotation"
+                  />
+                  <span>{{view.slicePlaneYRotation}}&deg;</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Rotate View</td>
+                <td>
+                  <input type="radio" :id="`${key}1`" :value="0" v-model="view.viewRotation">
+                  <label :for="`${key}1`">0&deg;</label>
+
+                  <input type="radio" :id="`${key}2`" :value="90" v-model="view.viewRotation">
+                  <label :for="`${key}2`">90&deg;</label>
+
+                  <input type="radio" :id="`${key}3`" :value="180" v-model="view.viewRotation">
+                  <label :for="`${key}3`">180&deg;</label>
+
+                  <input type="radio" :id="`${key}4`" :value="270" v-model="view.viewRotation">
+                  <label :for="`${key}4`">270&deg;</label>
+                </td>
+              </tr>
+            </table>
           <view-2d-mpr
             :volumes="volumes"
-            v-bind="top"
-            :onCreated="this.saveComponentReference(0)"
-          />
-        </div>
-        <div class="col">
-          <view-2d-mpr
-            :volumes="volumes"
-            v-bind="left"
-            :onCreated="this.saveComponentReference(1)"
-          />
-        </div>
-        <div class="col">
-          <view-2d-mpr
-            :volumes="volumes"
-            v-bind="front"
-            :onCreated="this.saveComponentReference(2)"
+            v-bind="view"
+            :onCreated="saveComponentReference(key)"
           />
         </div>
       </div>
@@ -140,6 +106,7 @@ export default {
       volumes: [],
       components: [],
       focusedWidgetId: null,
+      activeTool: 'LEVEL',
       window: {
         min: 0,
         max: 0,
@@ -152,24 +119,26 @@ export default {
       },
       loading: true,
       selectedFile: files[0],
-      rotate: 0,
       top: {
         slicePlaneNormal: [0,0,1],
-        sliceViewUp: [0,1,0],
-        slicePlaneRotation: 0,
-        sliceViewUpRotation: 0,
+        sliceViewUp: [0,-1,0],
+        slicePlaneXRotation: 0,
+        slicePlaneYRotation: 0,
+        viewRotation: 0,
       },
       left: {
         slicePlaneNormal: [1,0,0],
         sliceViewUp: [0,0,-1],
-        slicePlaneRotation: 0,
-        sliceViewUpRotation: 0,
+        slicePlaneXRotation: 0,
+        slicePlaneYRotation: 0,
+        viewRotation: 0,
       },
       front: {
         slicePlaneNormal: [0,1,0],
         sliceViewUp: [0,0,-1],
-        slicePlaneRotation: 0,
-        sliceViewUpRotation: 0,
+        slicePlaneXRotation: 0,
+        slicePlaneYRotation: 0,
+        viewRotation: 0,
       },
     };
   },
@@ -210,26 +179,10 @@ export default {
       },
       deep:true
     },
-    top(newRot){
-      console.log("top changed")
-      // let component = this.components[2]
-
-      // const renderWindow = component.genericRenderWindow.getRenderWindow();
-      // const istyle = renderWindow
-      //                 .getInteractor()
-      //                 .getInteractorStyle();
-      // const transform = vtkMatrixBuilder
-      //     .buildFromDegree()
-      //     .rotateZ(Number(newRot));
-      // let normal = [0,1,0];
-      // transform.apply(normal);
-      // console.log("newnormal", normal)
-      // istyle.setSliceNormal(normal, [0, 0, -1]);
-      // renderWindow.render()
-    }
   },
   methods: {
     selectTool(tool){
+      this.activeTool = tool;
       switch(tool)
       {
         case "LEVEL":
@@ -254,7 +207,7 @@ export default {
       // Object.values(this.imageActors).forEach(actor =>
       //   actor.getProperty().setColorLevel(colorLevel)
       // );
-      this.rerenderAllViewports();
+      // this.rerenderAllViewports();
     },
 
     updateColorWindow(window) {
@@ -262,7 +215,7 @@ export default {
       // Object.values(this.imageActors).forEach(actor =>
       //   actor.getProperty().setColorWindow(colorWindow)
       // );
-      this.rerenderAllViewports();
+      // this.rerenderAllViewports();
     },
 
     saveComponentReference(viewportIndex) {
@@ -282,27 +235,14 @@ export default {
 
         switch (viewportIndex) {
           default:
-          case 0:
+          case 'top':
             //Axial
-            // istyle.setSliceNormal(this.top.normal, [0, 1, 0]);
             break;
-          case 1:
+          case 'front':
             // sagittal
-            // istyle.setSliceNormal([1, 0, 0], [0, 0, -1]);
             break;
-          case 2:
+          case 'left':
             // Coronal
-            // istyle.setSliceNormal([0, 1, 0], [0, 0, -1]);
-            break;
-          case 3:
-            // 3d view
-            Object.values(this.imageActors).forEach(actor => {
-              console.log("adding actors", actor);
-              renderer.addActor(actor);
-            });
-            renderer.resetCamera();
-            renderer.resetCameraClippingRange();
-
             break;
         }
         renderWindow.render();
@@ -374,11 +314,20 @@ export default {
   max-height: 400px;
 }
 
+button{
+  font-size:14px;
+  line-height:20px;
+}
 button > img {
   vertical-align: middle;
   height: 20px;
 }
 button + button {
   margin-left: 8px;
+}
+
+button.active {
+  background: #77b0df;
+  border-color: #1370bd;
 }
 </style>
