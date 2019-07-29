@@ -98,8 +98,7 @@ export default {
         });
       }
       else {
-        //TODO: Wait for https://github.com/Kitware/vtk-js/pull/1148 to use
-        // this.renderer.removeAllVolumes()
+        this.renderer.removeAllVolumes()
       }
       this.renderWindow.render();
     },
