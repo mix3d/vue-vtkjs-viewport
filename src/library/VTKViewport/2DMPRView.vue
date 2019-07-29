@@ -106,6 +106,7 @@ export default {
     updateSlicePlane(ops={}){
       // TODO: optimize so you don't have to calculate EVERYTHING every time?
 
+      // TODO: Confirm that we never need to pass overrides
       const input = {
         //defaults
         slicePlaneNormal: this.slicePlaneNormal,
@@ -116,6 +117,7 @@ export default {
         //merge / overwrite function inputs
         ...ops
       }
+
       // rotate around the vector of the cross product of the plane and viewup as the X component
       let sliceXRot = []
       vec3.cross(sliceXRot, input.sliceViewUp, input.slicePlaneNormal)
