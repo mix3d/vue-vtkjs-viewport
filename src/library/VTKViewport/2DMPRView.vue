@@ -14,6 +14,7 @@ import vtkPaintFilter from "vtk.js/Sources/Filters/General/PaintFilter";
 import vtkPaintWidget from "vtk.js/Sources/Widgets/Widgets3D/PaintWidget";
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import { ViewTypes } from "vtk.js/Sources/Widgets/Core/WidgetManager/Constants";
+import VolumeConstants from 'vtk.js/Sources/Rendering/Core/VolumeMapper/Constants.js';
 
 import { quat, vec3 } from "gl-matrix";
 
@@ -25,6 +26,8 @@ import { degrees2radians } from "../lib/math/angles.js";
 import createLabelPipeline from "./createLabelPipeline";
 
 import ViewportOverlay from "../ViewportOverlay/ViewportOverlay.vue";
+
+const { BlendMode } = VolumeConstants;
 
 export default {
   name: "view-2d-mpr",
@@ -40,7 +43,11 @@ export default {
     // Camera view Up
     sliceViewUp: { type: Array, default(){ return [0,1,0] }},
     //0,90,180,270 rotation around the view axis
-    viewRotation: {type: Number, default: 0},
+    viewRotation: {type: Number, default: 0, validator: v => [0,90,180,270].includes(v)},
+
+    sliceThickness: {type: Number, default: 0, validator: v => v > 0 },
+
+    blendMode: {type: String},
 
     painting: { type: Boolean, default: false },
     paintFilterBackgroundImageData: Object,
@@ -179,6 +186,34 @@ export default {
     },
     viewRotation(){
       this.updateSlicePlane();
+    },
+
+    sliceThickness(thicc) {
+      const istyle = this.renderWindow.getInteractor().getInteractorStyle();
+      //set thickness if the current interactor has it
+      istyle.setSlabThickness && istyle.setSlabThickness(thicc)
+      this.renderWindow.render();
+    },
+
+    blendMode(mode){
+      let blendMode;
+      switch(mode){
+        case "MIP":
+          blendMode = BlendMode.MAXIMUM_INTENSITY_BLEND
+          break;
+        case "MINIP":
+          blendMode = BlendMode.MINIMUM_INTENSITY_BLEND
+          break;
+        case "AVG":
+          blendMode = BlendMode.AVERAGE_INTENSITY_BLEND
+          break;
+        case "none":
+        default:
+          blendMode = BlendMode.COMPOSITE_BLEND
+          break;
+      }
+      this.volumes[0].getMapper().setBlendMode(blendMode);
+      this.renderWindow.render();
     },
 
     activeTool(newTool, oldTool){

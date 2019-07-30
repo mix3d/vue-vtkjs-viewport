@@ -33,8 +33,8 @@
                 <td><input
                     class="rotate"
                     type="range"
-                    :min="-90"
-                    :max="90"
+                    min="-89"
+                    max="89"
                     step="1"
                     v-model.number="view.slicePlaneXRotation"
                   />
@@ -46,8 +46,8 @@
                 <td><input
                     class="rotate"
                     type="range"
-                    :min="-90"
-                    :max="90"
+                    min="-89"
+                    max="89"
                     step="1"
                     v-model.number="view.slicePlaneYRotation"
                   />
@@ -57,17 +57,49 @@
               <tr>
                 <td>Rotate View</td>
                 <td>
-                  <input type="radio" :id="`${key}1`" :value="0" v-model="view.viewRotation">
-                  <label :for="`${key}1`">0&deg;</label>
+                  <input type="radio" :id="`${key}1rot`" :value="0" v-model="view.viewRotation">
+                  <label :for="`${key}1rot`">0&deg;</label>
 
-                  <input type="radio" :id="`${key}2`" :value="90" v-model="view.viewRotation">
-                  <label :for="`${key}2`">90&deg;</label>
+                  <input type="radio" :id="`${key}2rot`" :value="90" v-model="view.viewRotation">
+                  <label :for="`${key}2rot`">90&deg;</label>
 
-                  <input type="radio" :id="`${key}3`" :value="180" v-model="view.viewRotation">
-                  <label :for="`${key}3`">180&deg;</label>
+                  <input type="radio" :id="`${key}3rot`" :value="180" v-model="view.viewRotation">
+                  <label :for="`${key}3rot`">180&deg;</label>
 
-                  <input type="radio" :id="`${key}4`" :value="270" v-model="view.viewRotation">
-                  <label :for="`${key}4`">270&deg;</label>
+                  <input type="radio" :id="`${key}4rot`" :value="270" v-model="view.viewRotation">
+                  <label :for="`${key}4rot`">270&deg;</label>
+                </td>
+              </tr>
+              <tr>
+                <td>Slice Thickness
+                </td>
+                <td><input
+                    class="rotate"
+                    type="range"
+                    min="0.1"
+                    max="50"
+                    step=".1"
+                    v-model.number="view.sliceThickness"
+                  />
+                  <span>{{view.sliceThickness}}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Blend Mode
+                </td>
+                <td>
+                  <input type="radio" :id="`${key}1blend`" value="none" v-model="view.blendMode">
+                  <label :for="`${key}1blend`">None</label>
+
+                  <input type="radio" :id="`${key}2blend`" value="MIP" v-model="view.blendMode">
+                  <label :for="`${key}2blend`">MIP</label>
+
+                  <input type="radio" :id="`${key}3blend`" value="MINIP" v-model="view.blendMode">
+                  <label :for="`${key}3blend`">MinIP</label>
+
+                  <input type="radio" :id="`${key}4blend`" value="AVG" v-model="view.blendMode">
+                  <label :for="`${key}4blend`">Average</label>
+
                 </td>
               </tr>
             </table>
@@ -125,6 +157,8 @@ export default {
         slicePlaneXRotation: 0,
         slicePlaneYRotation: 0,
         viewRotation: 0,
+        sliceThickness: 0.1,
+        blendMode: "",
       },
       left: {
         slicePlaneNormal: [1,0,0],
@@ -132,6 +166,8 @@ export default {
         slicePlaneXRotation: 0,
         slicePlaneYRotation: 0,
         viewRotation: 0,
+        sliceThickness: 0.1,
+        blendMode: "",
       },
       front: {
         slicePlaneNormal: [0,1,0],
@@ -139,6 +175,8 @@ export default {
         slicePlaneXRotation: 0,
         slicePlaneYRotation: 0,
         viewRotation: 0,
+        sliceThickness: 0.1,
+        blendMode: "",
       },
     };
   },
@@ -263,6 +301,7 @@ export default {
       });
       const volumeActor = vtkVolume.newInstance();
       const volumeMapper = vtkVolumeMapper.newInstance();
+      volumeMapper.setSampleDistance(1);
 
       volumeActor.setMapper(volumeMapper);
 
@@ -329,5 +368,9 @@ button + button {
 button.active {
   background: #77b0df;
   border-color: #1370bd;
+}
+
+label + input {
+  margin-left: 12px;
 }
 </style>
