@@ -347,8 +347,6 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   publicAPI.setSlabThickness = slabThickness => {
     model.slabThickness = slabThickness;
 
-    console.log('setting thickness');
-
     // Update the camera clipping range if the slab
     // thickness property is changed
     const renderer = model.interactor.getCurrentRenderer();
