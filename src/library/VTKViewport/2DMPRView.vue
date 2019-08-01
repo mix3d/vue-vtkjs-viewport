@@ -12,11 +12,9 @@ import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
 import vtkWidgetManager from "vtk.js/Sources/Widgets/Core/WidgetManager";
 import vtkPaintFilter from "vtk.js/Sources/Filters/General/PaintFilter";
 import vtkPaintWidget from "vtk.js/Sources/Widgets/Widgets3D/PaintWidget";
-import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import { ViewTypes } from "vtk.js/Sources/Widgets/Core/WidgetManager/Constants";
-import VolumeConstants from 'vtk.js/Sources/Rendering/Core/VolumeMapper/Constants.js';
 
-import { quat, vec3 } from "gl-matrix";
+import { quat, vec3, mat4 } from "gl-matrix";
 
 // Use modified MPRSlice interactor
 //import vtkInteractorStyleMPRSlice from 'vtk.js/Sources/Interaction/Style/InteractorStyleMPRSlice';
@@ -26,8 +24,6 @@ import { degrees2radians } from "../lib/math/angles.js";
 import createLabelPipeline from "./createLabelPipeline";
 
 import ViewportOverlay from "../ViewportOverlay/ViewportOverlay.vue";
-
-const { BlendMode } = VolumeConstants;
 
 export default {
   name: "view-2d-mpr",
@@ -134,14 +130,21 @@ export default {
 
       // rotate the viewUp vector as the Y component
       let sliceYRot = this.sliceViewUp
-      const yQuat = quat.create();
-      quat.setAxisAngle(yQuat, input.sliceViewUp, degrees2radians(input.sliceYRot));
-      quat.normalize(yQuat, yQuat);
+      // const yQuat = quat.create();
+      // quat.setAxisAngle(yQuat, input.sliceViewUp, degrees2radians(input.sliceYRot));
+      // quat.normalize(yQuat, yQuat);
 
       // Rotate the slicePlaneNormal using the x & y rotations.
-      const planeQuat = quat.create();
-      quat.add(planeQuat, xQuat, yQuat);
-      vec3.transformQuat(this.cachedSlicePlane, this.slicePlaneNormal, planeQuat);
+      // const planeQuat = quat.create();
+      // quat.add(planeQuat, xQuat, yQuat);
+      // quat.normalize(planeQuat, planeQuat);
+
+      // vec3.transformQuat(this.cachedSlicePlane, this.slicePlaneNormal, planeQuat);
+
+      const planeMat = mat4.create()
+      mat4.rotate(planeMat, planeMat, degrees2radians(input.sliceYRot), sliceYRot);
+      mat4.rotate(planeMat, planeMat, degrees2radians(input.sliceXRot), sliceXRot);
+      vec3.transformMat4(this.cachedSlicePlane, this.slicePlaneNormal, planeMat);
 
       // Rotate the viewUp in 90 degree increments
       const viewRotQuat = quat.create();
@@ -196,23 +199,21 @@ export default {
     },
 
     blendMode(mode){
-      let blendMode;
       switch(mode){
         case "MIP":
-          blendMode = BlendMode.MAXIMUM_INTENSITY_BLEND
+          this.volumes[0].getMapper().setBlendModeToMaximumIntensity()
           break;
         case "MINIP":
-          blendMode = BlendMode.MINIMUM_INTENSITY_BLEND
+          this.volumes[0].getMapper().setBlendModeToMinimumIntensity()
           break;
         case "AVG":
-          blendMode = BlendMode.AVERAGE_INTENSITY_BLEND
+          this.volumes[0].getMapper().setBlendModeToAverageIntensity()
           break;
         case "none":
-        default:
-          blendMode = BlendMode.COMPOSITE_BLEND
+          default:
+          this.volumes[0].getMapper().setBlendModeToComposite()
           break;
       }
-      this.volumes[0].getMapper().setBlendMode(blendMode);
       this.renderWindow.render();
     },
 

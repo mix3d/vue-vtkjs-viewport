@@ -262,7 +262,7 @@ export default {
 
         const renderWindow = component.genericRenderWindow.getRenderWindow();
         const renderer = component.genericRenderWindow.getRenderer();
-        // const camera = renderer.getActiveCamera();
+
         renderWindow
               .getInteractor()
               .getInteractorStyle()
@@ -271,18 +271,6 @@ export default {
         renderWindow.getInteractor().setInteractorStyle(istyle);
         istyle.setVolumeMapper(component.volumes[0]);
 
-        switch (viewportIndex) {
-          default:
-          case 'top':
-            //Axial
-            break;
-          case 'front':
-            // sagittal
-            break;
-          case 'left':
-            // Coronal
-            break;
-        }
         renderWindow.render();
       };
     },
