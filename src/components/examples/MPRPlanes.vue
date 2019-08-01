@@ -107,6 +107,10 @@
             :volumes="volumes"
             v-bind="view"
             :onCreated="saveComponentReference(key)"
+            @updateLevels="updateLevels"
+            @crosshairPointSelected="onCrosshairPointSelected"
+            :activeTool="activeTool"
+            :index="key"
           />
         </div>
       </div>
@@ -115,16 +119,15 @@
 </template>
 
 <script>
-import { View2dMPR, View, vtkInteractorStyleMPRCrosshairs } from "@/library";
+import { View2dMPR, View, vtkInteractorStyleMPRCrosshairs, vtkSVGWidgetManager, vtkSVGCrosshairsWidget } from "@/library";
 
 import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
-
-import vtkImageMapper from "vtk.js/Sources/Rendering/Core/ImageMapper";
-import vtkImageSlice from "vtk.js/Sources/Rendering/Core/ImageSlice";
+import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
+import vtkMath from "vtk.js/Sources/Common/Core/Math";
 
 import { files } from "@/components/examples";
 
@@ -229,14 +232,50 @@ export default {
           break;
       }
     },
+    onCrosshairPointSelected({index, worldPos}) {
+      Object.entries(this.components).forEach(([viewportIndex, component]) => {
+        if (viewportIndex !== index) {
+          // We are basically doing the same as getSlice but with the world coordinate
+          // that we want to jump to instead of the camera focal point.
+          // I would rather do the camera adjustment directly but I keep
+          // doing it wrong and so this is good enough for now.
+          // swerik
+          const renderWindow = component.genericRenderWindow.getRenderWindow();
 
-    setWidget(event) {
-      const widgetId = event.target.value;
+          const istyle = renderWindow.getInteractor().getInteractorStyle();
+          const sliceNormal = istyle.getSliceNormal();
+          const transform = vtkMatrixBuilder
+            .buildFromDegree()
+            .identity()
+            .rotateFromDirections(sliceNormal, [1, 0, 0]);
 
-      if (widgetId === "rotate") {
-        this.focusedWidgetId = null;
-      } else {
-        this.focusedWidgetId = widgetId;
+          const mutatedWorldPos = worldPos.slice();
+          transform.apply(mutatedWorldPos);
+          const slice = mutatedWorldPos[0];
+
+          istyle.setSlice(slice);
+
+          renderWindow.render();
+        }
+
+        const renderer = component.genericRenderWindow.getRenderer();
+        const wPos = vtkCoordinate.newInstance();
+        wPos.setCoordinateSystemToWorld();
+        wPos.setValue(worldPos);
+
+        const displayPosition = wPos.getComputedDisplayValue(renderer);
+        const { svgWidgetManager } = component;
+        component.svgWidgets.crosshairsWidget.setPoint(
+          displayPosition[0],
+          displayPosition[1]
+        );
+        svgWidgetManager.render();
+      });
+    },
+    //TODO: implement this
+    updateLevels({windowCenter, windowWidth}){
+      if(this.syncWindowLevels){
+        // update all 3 windows
       }
     },
 
@@ -270,6 +309,24 @@ export default {
         const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
         renderWindow.getInteractor().setInteractorStyle(istyle);
         istyle.setVolumeMapper(component.volumes[0]);
+
+        istyle.setCallback(
+          getCrosshairCallbackForIndex(this.components, viewportIndex)
+        );
+
+        const svgWidgetManager = vtkSVGWidgetManager.newInstance();
+        svgWidgetManager.setRenderer(renderer);
+        svgWidgetManager.setScale(1);
+
+        const crosshairsWidget = vtkSVGCrosshairsWidget.newInstance();
+
+        svgWidgetManager.addWidget(crosshairsWidget);
+        svgWidgetManager.render();
+
+        component.svgWidgetManager = svgWidgetManager;
+        component.svgWidgets = {
+          crosshairsWidget
+        };
 
         renderWindow.render();
       };
@@ -334,6 +391,64 @@ export default {
     this.loadData();
   }
 };
+
+
+function getStackScrollCallbackForIndex(windows, index) {
+  return ({ worldPos }) => {
+    windows.forEach((window, viewportIndex) => {
+      if (viewportIndex !== index) {
+        const renderWindow = window.genericRenderWindow.getRenderWindow();
+        const istyle = renderWindow.getInteractor.getInteractorStyle();
+        const sliceNormal = istyle.getSliceNormal();
+      }
+    });
+  };
+}
+
+function getCrosshairCallbackForIndex(windows, index) {
+  return ({ worldPos }) => {
+    console.log("getting crosshair coords", windows, index)
+    // Set camera focal point to world coordinate for linked views
+    Object.entries(windows).forEach(([viewportIndex, window]) => {
+      if (viewportIndex !== index) {
+        // We are basically doing the same as getSlice but with the world coordinate
+        // that we want to jump to instead of the camera focal point.
+        // I would rather do the camera adjustment directly but I keep
+        // doing it wrong and so this is good enough for now.
+        const renderWindow = window.genericRenderWindow.getRenderWindow();
+
+        const istyle = renderWindow.getInteractor().getInteractorStyle();
+        const sliceNormal = istyle.getSliceNormal();
+        const transform = vtkMatrixBuilder
+          .buildFromDegree()
+          .identity()
+          .rotateFromDirections(sliceNormal, [1, 0, 0]);
+
+        const mutatedWorldPos = worldPos.slice();
+        transform.apply(mutatedWorldPos);
+        const slice = mutatedWorldPos[0];
+
+        istyle.setSlice(slice);
+
+        renderWindow.render();
+      }
+
+      const renderer = window.genericRenderWindow.getRenderer();
+      const wPos = vtkCoordinate.newInstance();
+      wPos.setCoordinateSystemToWorld();
+      wPos.setValue(worldPos);
+
+      const displayPosition = wPos.getComputedDisplayValue(renderer);
+      const { svgWidgetManager } = window;
+      window.svgWidgets.crosshairsWidget.setPoint(
+        displayPosition[0],
+        displayPosition[1]
+      );
+      svgWidgetManager.render();
+    });
+  };
+}
+
 </script>
 
 <style scoped>

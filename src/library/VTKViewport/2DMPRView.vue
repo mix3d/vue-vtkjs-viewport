@@ -19,6 +19,9 @@ import { quat, vec3, mat4 } from "gl-matrix";
 // Use modified MPRSlice interactor
 //import vtkInteractorStyleMPRSlice from 'vtk.js/Sources/Interaction/Style/InteractorStyleMPRSlice';
 import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice";
+import vtkInteractorStyleMPRCrosshairs from './vtkInteractorStyleMPRCrosshairs';
+import vtkInteractorStyleMPRWindowLevel from './vtkInteractorStyleMPRWindowLevel';
+
 import { createSub } from "../lib/createSub.js";
 import { degrees2radians } from "../lib/math/angles.js";
 import createLabelPipeline from "./createLabelPipeline";
@@ -31,7 +34,11 @@ export default {
   props: {
     volumes: { type: Array, required: true },
     actors: Array,
+
     activeTool: {type: String, default: "LEVEL"},
+    // Front, Side, Top, etc
+    index: String,
+
     //Slice Plane
     slicePlaneNormal: { type: Array, default(){ return [0,0,1] }},
     slicePlaneXRotation: { type: Number, default: 0},
@@ -42,6 +49,10 @@ export default {
     viewRotation: {type: Number, default: 0, validator: v => [0,90,180,270].includes(v)},
 
     sliceThickness: {type: Number, default: 0, validator: v => v > 0 },
+
+    //leveling
+    windowWidth: {type: Number, default: 0},
+    windowCenter: {type: Number, default: 0},
 
     blendMode: {type: String},
 
@@ -98,6 +109,7 @@ export default {
             console.warn("Data to <Vtk2D> is not vtkVolume data");
           }
           this.renderer.addVolume(volume);
+
         });
       }
       else {
@@ -124,12 +136,11 @@ export default {
       let sliceXRot = []
       vec3.cross(sliceXRot, input.sliceViewUp, input.slicePlaneNormal)
       vec3.normalize(sliceXRot, sliceXRot);
-      const xQuat = quat.create();
-      quat.setAxisAngle(xQuat, sliceXRot, degrees2radians(input.sliceXRot));
-      quat.normalize(xQuat, xQuat);
+
 
       // rotate the viewUp vector as the Y component
       let sliceYRot = this.sliceViewUp
+
       // const yQuat = quat.create();
       // quat.setAxisAngle(yQuat, input.sliceViewUp, degrees2radians(input.sliceYRot));
       // quat.normalize(yQuat, yQuat);
@@ -153,6 +164,9 @@ export default {
       quat.normalize(viewRotQuat, viewRotQuat);
 
       // rotate the ViewUp with the x and z rotations
+      const xQuat = quat.create();
+      quat.setAxisAngle(xQuat, sliceXRot, degrees2radians(input.sliceXRot));
+      quat.normalize(xQuat, xQuat);
       const viewUpQuat = quat.create();
       quat.add(viewUpQuat, xQuat, viewRotQuat);
       vec3.transformQuat(this.cachedSliceViewUp, this.sliceViewUp, viewRotQuat);
@@ -166,6 +180,25 @@ export default {
         .setSliceNormal(this.cachedSlicePlane, this.cachedSliceViewUp);
 
       renderWindow.render()
+    },
+    setInteractor(istyle) {
+      console.log("setting interactor")
+      const renderWindow = this.genericRenderWindow.getRenderWindow();
+      renderWindow.getInteractor().setInteractorStyle(istyle);
+      // TODO: Not sure why this is required the second time this function is called
+      istyle.setInteractor(renderWindow.getInteractor());
+
+      if( istyle.setSliceNormal ) {
+        istyle.setSliceNormal(this.cachedSlicePlane, this.cachedSliceViewUp);
+      }
+      if( istyle.setSlabThickness ) {
+        istyle.setSlabThickness(this.sliceThickness);
+      }
+
+      istyle.setVolumeMapper(this.volumes[0]);
+    },
+    onCrosshairPointSelected(data){
+      this.$emit('crosshairPointSelected',{...data, index:this.index})
     }
   },
   watch: {
@@ -199,29 +232,34 @@ export default {
     },
 
     blendMode(mode){
-      switch(mode){
-        case "MIP":
-          this.volumes[0].getMapper().setBlendModeToMaximumIntensity()
-          break;
-        case "MINIP":
-          this.volumes[0].getMapper().setBlendModeToMinimumIntensity()
-          break;
-        case "AVG":
-          this.volumes[0].getMapper().setBlendModeToAverageIntensity()
-          break;
-        case "none":
+      if(this.sliceThickness > 1) {
+        switch(mode){
+          case "MIP":
+            this.volumes[0].getMapper().setBlendModeToMaximumIntensity()
+            break;
+          case "MINIP":
+            this.volumes[0].getMapper().setBlendModeToMinimumIntensity()
+            break;
+          case "AVG":
+            this.volumes[0].getMapper().setBlendModeToAverageIntensity()
+            break;
           default:
-          this.volumes[0].getMapper().setBlendModeToComposite()
-          break;
+            this.volumes[0].getMapper().setBlendModeToComposite()
+            break;
+        }
       }
       this.renderWindow.render();
     },
 
-    activeTool(newTool, oldTool){
+    activeTool(newTool){
       switch(newTool){
         case 'LEVEL':
+          this.setInteractor(vtkInteractorStyleMPRWindowLevel.newInstance())
           break;
         case 'SELECT':
+          const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
+          this.setInteractor(istyle);
+          istyle.setCallback(this.onCrosshairPointSelected);
           break;
       }
     },
@@ -322,9 +360,7 @@ export default {
   },
   computed: {
     voi() {
-      // TODO: update this with actual view's/volume's values
-      console.log("computing voi", getVOI(this.volumes[0]));
-      return getVOI(this.volumes[0]);
+      return {windowWidth: this.windowWidth, windowCenter: this.windowCenter};
     }
   },
   mounted() {
@@ -458,7 +494,7 @@ export default {
     // add the current volumes to the vtk renderer
     this.updateVolumesForRendering(this.volumes);
 
-    this.updateSlicePlane()
+    this.updateSlicePlane();
 
     // force the initial draw to set the canvas to the parent bounds.
     this.genericRenderWindow.resize();

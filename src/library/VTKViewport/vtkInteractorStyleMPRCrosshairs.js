@@ -109,6 +109,10 @@ function vtkInteractorStyleMPRCrosshairs(publicAPI, model) {
       if (mapper) {
         // prevent zoom manipulator from messing with our focal point
         camera.setFreezeFocalPoint(true);
+
+        // NOTE: Disabling this because it makes it more difficult to switch
+        // interactor styles. Need to find a better way to do this!
+        //publicAPI.setSliceNormal(...publicAPI.getSliceNormal());
       } else {
         camera.setFreezeFocalPoint(false);
       }
