@@ -1,3 +1,7 @@
+/**
+ * Extends the vtkInteractorStyleMPRSlice by adding a click handler for selecting a point in rendered space and converting to 3d space, then calling the registered callback to update other views to that same point.
+ */
+
 import macro from "vtk.js/Sources/macro";
 // import vtkMath from 'vtk.js/Sources/Common/Core/Math';
 // import vtkMatrixBuilder from 'vtk.js/Sources/Common/Core/MatrixBuilder';

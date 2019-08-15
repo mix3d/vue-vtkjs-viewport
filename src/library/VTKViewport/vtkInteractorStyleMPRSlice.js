@@ -1,3 +1,7 @@
+/**
+ * Based on the vtk.js's MPR Slice interactor Style, but with improvements.
+ */
+
 // Temporarily using a modified version of this interactor to deal with a camera subscription issue
 import macro from "vtk.js/Sources/macro";
 import vtkMath from "vtk.js/Sources/Common/Core/Math";
@@ -63,10 +67,15 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
     dragEnabled: false
   });
 
+  model.onSetSlice = () => {
+    console.log("set not set")
+  };
+
   // cache for sliceRange
   const cache = {
     sliceNormal: [0, 0, 0],
-    sliceRange: [0, 0]
+    sliceRange: [0, 0],
+    slicePosition: [0, 0, 0],
   };
 
   function updateScrollManipulator() {
@@ -156,6 +165,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   };
 
   publicAPI.getSlice = () => {
+    // console.log("getslice",arguments)
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
     const sliceNormal = publicAPI.getSliceNormal();
@@ -168,10 +178,12 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
 
     const fp = camera.getFocalPoint();
     transform.apply(fp);
+    console.log("getslice",fp[0])
     return fp[0];
   };
 
   publicAPI.setSlice = slice => {
+    console.log("setSlice",slice)
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
 
@@ -180,6 +192,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       const bounds = model.volumeMapper.getBounds();
 
       const clampedSlice = clamp(slice, ...range);
+
       const center = [
         (bounds[0] + bounds[1]) / 2.0,
         (bounds[2] + bounds[3]) / 2.0,
@@ -202,14 +215,16 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
         zeroPoint[2] + dop[2] * clampedSlice
       ];
 
-      const newPos = [
+      const cameraPos = [
         slicePoint[0] - dop[0] * distance,
         slicePoint[1] - dop[1] * distance,
         slicePoint[2] - dop[2] * distance
       ];
 
-      camera.setPosition(...newPos);
+      camera.setPosition(...cameraPos);
       camera.setFocalPoint(...slicePoint);
+
+      model.onSetSlice(slicePoint);
     }
   };
 
@@ -375,7 +390,7 @@ export function extend(publicAPI, model, initialValues = {}) {
   // Inheritance
   vtkInteractorStyleManipulator.extend(publicAPI, model, initialValues);
 
-  macro.setGet(publicAPI, model, ["volumeMapper"]);
+  macro.setGet(publicAPI, model, ["volumeMapper", "onSetSlice"]);
   macro.get(publicAPI, model, ["slabThickness"]);
 
   // Object specific methods

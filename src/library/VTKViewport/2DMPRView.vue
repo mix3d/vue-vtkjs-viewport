@@ -89,6 +89,9 @@ export default {
   },
 
   methods: {
+    onStackScroll(slicePosition) {
+      this.$emit("onScrolled",{slicePosition, index:this.index})
+    },
     updatePaintbrush() {
       const manip = this.paintWidget.getManipulator();
       const handle = this.paintWidget.getWidgetState().getHandle();
@@ -254,12 +257,15 @@ export default {
     activeTool(newTool){
       switch(newTool){
         case 'LEVEL':
-          this.setInteractor(vtkInteractorStyleMPRWindowLevel.newInstance())
+          const istyle = vtkInteractorStyleMPRWindowLevel.newInstance();
+          istyle.setOnSetSlice(this.onStackScroll);
+          this.setInteractor(istyle)
           break;
         case 'SELECT':
-          const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
-          this.setInteractor(istyle);
-          istyle.setCallback(this.onCrosshairPointSelected);
+          const istyle2 = vtkInteractorStyleMPRCrosshairs.newInstance();
+          this.setInteractor(istyle2);
+          istyle2.setOnSetSlice(this.onStackScroll);
+          istyle2.setCallback(this.onCrosshairPointSelected);
           break;
       }
     },
@@ -400,6 +406,7 @@ export default {
     oglrw.buildPass(true);
 
     const istyle = vtkInteractorStyleMPRSlice.newInstance();
+    istyle.setOnSetSlice(this.onStackScroll)
     const inter = this.renderWindow.getInteractor();
     inter.setInteractorStyle(istyle);
 

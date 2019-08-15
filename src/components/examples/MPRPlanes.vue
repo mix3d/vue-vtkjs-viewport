@@ -109,6 +109,7 @@
             :onCreated="saveComponentReference(key)"
             @updateLevels="updateLevels"
             @crosshairPointSelected="onCrosshairPointSelected"
+            @onScrolled="onScrolled"
             :activeTool="activeTool"
             :index="key"
           />
@@ -232,6 +233,20 @@ export default {
           break;
       }
     },
+    onScrolled({slicePosition, index}){
+      console.log("onscrolled",slicePosition, index)
+      Object.entries(this.components).forEach(([viewportIndex, component]) => {
+        const camera = component.genericRenderWindow.getRenderer().getActiveCamera();
+        const distance = camera.getDistance();
+        const dop = camera.getDirectionOfProjection();
+        vtkMath.normalize(dop);
+        const cameraPos = [
+          slicePosition[0] - dop[0] * distance,
+          slicePosition[1] - dop[1] * distance,
+          slicePosition[2] - dop[2] * distance
+        ];
+      })
+    },
     onCrosshairPointSelected({index, worldPos}) {
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
         if (viewportIndex !== index) {
@@ -306,6 +321,7 @@ export default {
               .getInteractor()
               .getInteractorStyle()
               .setVolumeMapper(null);
+        // TODO: bind interactor onscroll here
         const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
         renderWindow.getInteractor().setInteractorStyle(istyle);
         istyle.setVolumeMapper(component.volumes[0]);
