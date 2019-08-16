@@ -342,6 +342,13 @@ export default {
       return component => {
         this.components[viewportIndex] = component;
 
+        const {windowWidth, windowLevel} = getVOI(component.volumes[0])
+
+        // get initial window leveling
+        this[viewportIndex].windowWidth = windowWidth;
+        this[viewportIndex].windowLevel = windowLevel;
+        
+
         const renderWindow = component.genericRenderWindow.getRenderWindow();
         const renderer = component.genericRenderWindow.getRenderer();
 
@@ -458,10 +465,6 @@ function setInteractor(component, istyle) {
   if (istyle.setSlabThickness && oldStyle.getSlabThickness()) {
     istyle.setSlabThickness(oldStyle.getSlabThickness());
   }
-
-
-
-
   istyle.setVolumeMapper(component.volumes[0]);
 }
 
@@ -524,6 +527,21 @@ function generateCrosshairCallbackForIndex(windows, index) {
     });
   };
 }
+
+const getVOI = volume => {
+  // Note: This controls window/level
+
+  // TODO: Make this work reactively with onModified...
+  const rgbTransferFunction = volume.getProperty().getRGBTransferFunction(0);
+  const range = rgbTransferFunction.getMappingRange();
+  const windowWidth = range[0] + range[1];
+  const windowCenter = range[0] + windowWidth / 2;
+
+  return {
+    windowCenter,
+    windowWidth
+  };
+};
 </script>
 
 <style scoped>
