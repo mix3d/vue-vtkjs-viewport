@@ -21,7 +21,7 @@
         </button>
       </div>
       <div class="row">
-        <div class="col" v-for="(view, key) in viewDataArray" :key="key">
+        <div class="col temp" v-for="(view, key) in viewDataArray" :key="key">
           <table>
             <tr>
               <td>
@@ -165,7 +165,9 @@ export default {
         slicePlaneYRotation: 0,
         viewRotation: 0,
         sliceThickness: 0.1,
-        blendMode: ""
+        blendMode: "none",
+        windowCenter: 0,
+        windowWidth: 0,
       },
       left: {
         slicePlaneNormal: [1, 0, 0],
@@ -174,7 +176,9 @@ export default {
         slicePlaneYRotation: 0,
         viewRotation: 0,
         sliceThickness: 0.1,
-        blendMode: ""
+        blendMode: "none",
+        windowCenter: 0,
+        windowWidth: 0,
       },
       front: {
         slicePlaneNormal: [0, 1, 0],
@@ -183,26 +187,16 @@ export default {
         slicePlaneYRotation: 0,
         viewRotation: 0,
         sliceThickness: 0.1,
-        blendMode: ""
+        blendMode: "none",
+        windowCenter: 0,
+        windowWidth: 0,
       }
     };
   },
   computed: {
-    voi() {
-      console.log("voi", Number(this.level.value), Number(this.window.value));
-      return {
-        windowCenter: Number(this.level.value),
-        windowWidth: Number(this.window.value)
-      };
-    },
     viewDataArray() {
       return { top: this.top, left: this.left, front: this.front };
     },
-    dataDetails() {
-      return {
-        voi: this.voi
-      };
-    }
   },
   created() {
     // non-reactive data
@@ -238,7 +232,9 @@ export default {
               istyle.setOnScroll(slicePosition =>
                 this.onScrolled({ slicePosition, index: viewportIndex })
               );
-              istyle.setOnLevelsChanged(this.updateLevels);
+              istyle.setOnLevelsChanged((levels) => {
+                this.updateLevels({...levels, index:viewportIndex})
+              });
               setInteractor(component, istyle);
             }
           );
@@ -266,6 +262,7 @@ export default {
         const distance = camera.getDistance();
         const dop = camera.getDirectionOfProjection();
         vtkMath.normalize(dop);
+        // console.log("dop", dop)
         const cameraPos = [
           slicePosition[0] - dop[0] * distance,
           slicePosition[1] - dop[1] * distance,
@@ -314,7 +311,12 @@ export default {
       });
     },
     //TODO: implement this
-    updateLevels({ windowCenter, windowWidth }) {
+    updateLevels({ windowCenter, windowWidth, index }) {
+      console.log(index+" levels", windowCenter, windowWidth)
+
+      this[index].windowCenter = windowCenter;
+      this[index].windowWidth = windowWidth;
+
       if (this.syncWindowLevels) {
         // update all 3 windows
       }
@@ -444,13 +446,21 @@ function setInteractor(component, istyle) {
   // NOTE: react-vtk-viewport's code put this here, so we're copying it. Seems redundant?
   istyle.setInteractor(renderWindow.getInteractor());
 
+  // Make sure to set the style to the interactor itself, because reasons...?!
+  const inter = renderWindow.getInteractor();
+  inter.setInteractorStyle(istyle);
+
   // Copy previous interactors styles into the new one.
-  if (istyle.setSliceNormal) {
+  if (istyle.setSliceNormal && oldStyle.getSliceNormal()) {
+    console.log("setting slicenormal from old normal")
     istyle.setSliceNormal(oldStyle.getSliceNormal(), oldStyle.getViewUp());
   }
-  if (istyle.setSlabThickness) {
+  if (istyle.setSlabThickness && oldStyle.getSlabThickness()) {
     istyle.setSlabThickness(oldStyle.getSlabThickness());
   }
+
+
+
 
   istyle.setVolumeMapper(component.volumes[0]);
 }
@@ -519,6 +529,10 @@ function generateCrosshairCallbackForIndex(windows, index) {
 <style scoped>
 .col {
   max-height: 400px;
+}
+
+.temp {
+  border: 1px solid blue;
 }
 
 button {

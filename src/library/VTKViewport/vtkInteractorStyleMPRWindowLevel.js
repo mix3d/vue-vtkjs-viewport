@@ -118,8 +118,9 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
         .setMappingRange(lower, upper);
 
       const onLevelsChanged = publicAPI.getOnLevelsChanged();
-      if (onLevelsChanged)
+      if (onLevelsChanged) {
         onLevelsChanged({ windowCenter: newLevel, windowWidth: newWin });
+      }
     }
   };
 

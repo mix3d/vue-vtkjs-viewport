@@ -101,6 +101,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   let interactorSub = null;
   const superSetInteractor = publicAPI.setInteractor;
   publicAPI.setInteractor = interactor => {
+    console.log("setting interactor")
     superSetInteractor(interactor);
     if (cameraSub) {
       cameraSub.unsubscribe();
@@ -270,16 +271,18 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   };
 
   // Slice normal is just camera DOP
-  // publicAPI.getSliceNormal = () => {
-  //   if (model.volumeMapper) {
-  //     const renderer = model.interactor.getCurrentRenderer();
-  //     const camera = renderer.getActiveCamera();
-  //     return camera.getDirectionOfProjection();
-  //   }
-  //   return [0, 0, 0];
-  // };
+  publicAPI.getSliceNormal = () => {
+    if (model.volumeMapper && model.interactor) {
+      // console.log("getslicenormal", model, model.interactor)
+      const renderer = model.interactor.getCurrentRenderer();
+      const camera = renderer.getActiveCamera();
+      return camera.getDirectionOfProjection();
+    }
+    return [0, 0, 0];
+  };
 
-  publicAPI.getSliceNormal = () => cache.sliceNormal;
+  // Thought this was a good idea, but no.
+  // publicAPI.getSliceNormal = () => cache.sliceNormal;
 
   /**
    * Move the camera to the given slice normal and viewup direction. Viewup can be used to rotate the display of the image around the direction of view.

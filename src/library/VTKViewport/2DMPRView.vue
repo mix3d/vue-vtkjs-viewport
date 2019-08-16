@@ -337,20 +337,6 @@ export default {
   }
 };
 
-const getVOI = actor => {
-  // Note: This controls window/level
-
-  // TODO: Make this work reactively with onModified...
-  const rgbTransferFunction = actor.getProperty().getRGBTransferFunction(0);
-  const range = rgbTransferFunction.getMappingRange();
-  const windowWidth = range[0] + range[1];
-  const windowCenter = range[0] + windowWidth / 2;
-
-  return {
-    windowCenter,
-    windowWidth
-  };
-};
 </script>
 
 <style lang="scss" scoped>
@@ -359,5 +345,6 @@ const getVOI = actor => {
   width: 100%;
   height: 100%;
   position: relative;
+  border: solid 1px red;
 }
 </style>
