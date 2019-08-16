@@ -1,9 +1,7 @@
 <template>
   <div>
     <h2>MPR Planes</h2>
-    <p>
-      Attempts at final integration of MPR with all the bells and whistles.
-    </p>
+    <p>Attempts at final integration of MPR with all the bells and whistles.</p>
     <select v-model="selectedFile">
       <option v-for="file in files" :key="file">{{ file }}</option>
     </select>
@@ -25,92 +23,90 @@
       <div class="row">
         <div class="col" v-for="(view, key) in viewDataArray" :key="key">
           <table>
-              <tr>
-                <td><strong>{{key}}</strong></td>
-              </tr>
-              <tr>
-                <td>Rotate SlicePlane X</td>
-                <td><input
-                    class="rotate"
-                    type="range"
-                    min="-89"
-                    max="89"
-                    step="1"
-                    v-model.number="view.slicePlaneXRotation"
-                  />
-                  <span>{{view.slicePlaneXRotation}}&deg;</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Rotate SlicePlane Y</td>
-                <td><input
-                    class="rotate"
-                    type="range"
-                    min="-89"
-                    max="89"
-                    step="1"
-                    v-model.number="view.slicePlaneYRotation"
-                  />
-                  <span>{{view.slicePlaneYRotation}}&deg;</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Rotate View</td>
-                <td>
-                  <input type="radio" :id="`${key}1rot`" :value="0" v-model="view.viewRotation">
-                  <label :for="`${key}1rot`">0&deg;</label>
+            <tr>
+              <td>
+                <strong>{{key}}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>Rotate SlicePlane X</td>
+              <td>
+                <input
+                  class="rotate"
+                  type="range"
+                  min="-89"
+                  max="89"
+                  step="1"
+                  v-model.number="view.slicePlaneXRotation"
+                />
+                <span>{{view.slicePlaneXRotation}}&deg;</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Rotate SlicePlane Y</td>
+              <td>
+                <input
+                  class="rotate"
+                  type="range"
+                  min="-89"
+                  max="89"
+                  step="1"
+                  v-model.number="view.slicePlaneYRotation"
+                />
+                <span>{{view.slicePlaneYRotation}}&deg;</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Rotate View</td>
+              <td>
+                <input type="radio" :id="`${key}1rot`" :value="0" v-model="view.viewRotation" />
+                <label :for="`${key}1rot`">0&deg;</label>
 
-                  <input type="radio" :id="`${key}2rot`" :value="90" v-model="view.viewRotation">
-                  <label :for="`${key}2rot`">90&deg;</label>
+                <input type="radio" :id="`${key}2rot`" :value="90" v-model="view.viewRotation" />
+                <label :for="`${key}2rot`">90&deg;</label>
 
-                  <input type="radio" :id="`${key}3rot`" :value="180" v-model="view.viewRotation">
-                  <label :for="`${key}3rot`">180&deg;</label>
+                <input type="radio" :id="`${key}3rot`" :value="180" v-model="view.viewRotation" />
+                <label :for="`${key}3rot`">180&deg;</label>
 
-                  <input type="radio" :id="`${key}4rot`" :value="270" v-model="view.viewRotation">
-                  <label :for="`${key}4rot`">270&deg;</label>
-                </td>
-              </tr>
-              <tr>
-                <td>Slice Thickness
-                </td>
-                <td><input
-                    class="rotate"
-                    type="range"
-                    min="0.1"
-                    max="50"
-                    step=".1"
-                    v-model.number="view.sliceThickness"
-                  />
-                  <span>{{view.sliceThickness}}</span>
-                </td>
-              </tr>
-              <tr>
-                <td>Blend Mode
-                </td>
-                <td>
-                  <input type="radio" :id="`${key}1blend`" value="none" v-model="view.blendMode">
-                  <label :for="`${key}1blend`">None</label>
+                <input type="radio" :id="`${key}4rot`" :value="270" v-model="view.viewRotation" />
+                <label :for="`${key}4rot`">270&deg;</label>
+              </td>
+            </tr>
+            <tr>
+              <td>Slice Thickness</td>
+              <td>
+                <input
+                  class="rotate"
+                  type="range"
+                  min="0.1"
+                  max="50"
+                  step=".1"
+                  v-model.number="view.sliceThickness"
+                />
+                <span>{{view.sliceThickness}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Blend Mode</td>
+              <td>
+                <input type="radio" :id="`${key}1blend`" value="none" v-model="view.blendMode" />
+                <label :for="`${key}1blend`">None</label>
 
-                  <input type="radio" :id="`${key}2blend`" value="MIP" v-model="view.blendMode">
-                  <label :for="`${key}2blend`">MIP</label>
+                <input type="radio" :id="`${key}2blend`" value="MIP" v-model="view.blendMode" />
+                <label :for="`${key}2blend`">MIP</label>
 
-                  <input type="radio" :id="`${key}3blend`" value="MINIP" v-model="view.blendMode">
-                  <label :for="`${key}3blend`">MinIP</label>
+                <input type="radio" :id="`${key}3blend`" value="MINIP" v-model="view.blendMode" />
+                <label :for="`${key}3blend`">MinIP</label>
 
-                  <input type="radio" :id="`${key}4blend`" value="AVG" v-model="view.blendMode">
-                  <label :for="`${key}4blend`">Average</label>
-
-                </td>
-              </tr>
-            </table>
+                <input type="radio" :id="`${key}4blend`" value="AVG" v-model="view.blendMode" />
+                <label :for="`${key}4blend`">Average</label>
+              </td>
+            </tr>
+          </table>
           <view-2d-mpr
             :volumes="volumes"
             v-bind="view"
             :onCreated="saveComponentReference(key)"
-            @updateLevels="updateLevels"
-            @crosshairPointSelected="onCrosshairPointSelected"
-            @onScrolled="onScrolled"
-            :activeTool="activeTool"
             :index="key"
           />
         </div>
@@ -120,7 +116,14 @@
 </template>
 
 <script>
-import { View2dMPR, View, vtkInteractorStyleMPRCrosshairs, vtkSVGWidgetManager, vtkSVGCrosshairsWidget } from "@/library";
+import {
+  View2dMPR,
+  View,
+  vtkInteractorStyleMPRCrosshairs,
+  vtkInteractorStyleMPRWindowLevel,
+  vtkSVGWidgetManager,
+  vtkSVGCrosshairsWidget
+} from "@/library";
 
 import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
@@ -142,7 +145,7 @@ export default {
       volumes: [],
       components: [],
       focusedWidgetId: null,
-      activeTool: 'LEVEL',
+      activeTool: "LEVEL",
       window: {
         min: 0,
         max: 0,
@@ -156,32 +159,32 @@ export default {
       loading: true,
       selectedFile: files[0],
       top: {
-        slicePlaneNormal: [0,0,1],
-        sliceViewUp: [0,-1,0],
+        slicePlaneNormal: [0, 0, 1],
+        sliceViewUp: [0, -1, 0],
         slicePlaneXRotation: 0,
         slicePlaneYRotation: 0,
         viewRotation: 0,
         sliceThickness: 0.1,
-        blendMode: "",
+        blendMode: ""
       },
       left: {
-        slicePlaneNormal: [1,0,0],
-        sliceViewUp: [0,0,-1],
+        slicePlaneNormal: [1, 0, 0],
+        sliceViewUp: [0, 0, -1],
         slicePlaneXRotation: 0,
         slicePlaneYRotation: 0,
         viewRotation: 0,
         sliceThickness: 0.1,
-        blendMode: "",
+        blendMode: ""
       },
       front: {
-        slicePlaneNormal: [0,1,0],
-        sliceViewUp: [0,0,-1],
+        slicePlaneNormal: [0, 1, 0],
+        sliceViewUp: [0, 0, -1],
         slicePlaneXRotation: 0,
         slicePlaneYRotation: 0,
         viewRotation: 0,
         sliceThickness: 0.1,
-        blendMode: "",
-      },
+        blendMode: ""
+      }
     };
   },
   computed: {
@@ -192,8 +195,8 @@ export default {
         windowWidth: Number(this.window.value)
       };
     },
-    viewDataArray(){
-      return {top:this.top, left:this.left, front:this.front};
+    viewDataArray() {
+      return { top: this.top, left: this.left, front: this.front };
     },
     dataDetails() {
       return {
@@ -209,34 +212,57 @@ export default {
     selectedFile(newVal) {
       this.loadData(newVal);
     },
-    window:{
-      handler(newWindow){
-        this.updateColorWindow(newWindow.value)
+    window: {
+      handler(newWindow) {
+        this.updateColorWindow(newWindow.value);
       },
-      deep:true
+      deep: true
     },
     level: {
-      handler(newLevel){
-        this.updateColorLevel(newLevel.value)
+      handler(newLevel) {
+        this.updateColorLevel(newLevel.value);
       },
-      deep:true
-    },
+      deep: true
+    }
   },
   methods: {
-    selectTool(tool){
+    selectTool(tool) {
       this.activeTool = tool;
-      switch(tool)
-      {
+      // Switch the active interactor style.
+      // TODO:
+      switch (tool) {
         case "LEVEL":
+          Object.entries(this.components).forEach(
+            ([viewportIndex, component]) => {
+              const istyle = vtkInteractorStyleMPRWindowLevel.newInstance();
+              istyle.setOnScroll(slicePosition =>
+                this.onScrolled({ slicePosition, index: viewportIndex })
+              );
+              istyle.setOnLevelsChanged(this.updateLevels);
+              setInteractor(component, istyle);
+            }
+          );
           break;
         case "SELECT":
+          Object.entries(this.components).forEach(
+            ([viewportIndex, component]) => {
+              const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
+              istyle.setOnScroll(slicePosition =>
+                this.onScrolled({ slicePosition, index: viewportIndex })
+              );
+              istyle.setOnClickCallback(this.onCrosshairPointSelected);
+              setInteractor(component, istyle);
+            }
+          );
           break;
       }
     },
-    onScrolled({slicePosition, index}){
-      console.log("onscrolled",slicePosition, index)
+    onScrolled({ slicePosition, index }) {
+      console.log("onscrolled", slicePosition, index);
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
-        const camera = component.genericRenderWindow.getRenderer().getActiveCamera();
+        const camera = component.genericRenderWindow
+          .getRenderer()
+          .getActiveCamera();
         const distance = camera.getDistance();
         const dop = camera.getDirectionOfProjection();
         vtkMath.normalize(dop);
@@ -245,9 +271,9 @@ export default {
           slicePosition[1] - dop[1] * distance,
           slicePosition[2] - dop[2] * distance
         ];
-      })
+      });
     },
-    onCrosshairPointSelected({index, worldPos}) {
+    onCrosshairPointSelected({ index, worldPos }) {
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
         if (viewportIndex !== index) {
           // We are basically doing the same as getSlice but with the world coordinate
@@ -288,8 +314,8 @@ export default {
       });
     },
     //TODO: implement this
-    updateLevels({windowCenter, windowWidth}){
-      if(this.syncWindowLevels){
+    updateLevels({ windowCenter, windowWidth }) {
+      if (this.syncWindowLevels) {
         // update all 3 windows
       }
     },
@@ -318,16 +344,17 @@ export default {
         const renderer = component.genericRenderWindow.getRenderer();
 
         renderWindow
-              .getInteractor()
-              .getInteractorStyle()
-              .setVolumeMapper(null);
+          .getInteractor()
+          .getInteractorStyle()
+          .setVolumeMapper(null);
+
         // TODO: bind interactor onscroll here
         const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
         renderWindow.getInteractor().setInteractorStyle(istyle);
         istyle.setVolumeMapper(component.volumes[0]);
 
-        istyle.setCallback(
-          getCrosshairCallbackForIndex(this.components, viewportIndex)
+        istyle.setOnClickCallback(
+          generateCrosshairCallbackForIndex(this.components, viewportIndex)
         );
 
         const svgWidgetManager = vtkSVGWidgetManager.newInstance();
@@ -408,8 +435,28 @@ export default {
   }
 };
 
+function setInteractor(component, istyle) {
+  const renderWindow = component.genericRenderWindow.getRenderWindow();
+  // We are assuming the old style is always extended from the MPRSlice style
+  const oldStyle = renderWindow.getInteractor().getInteractorStyle();
 
-function getStackScrollCallbackForIndex(windows, index) {
+  renderWindow.getInteractor().setInteractorStyle(istyle);
+  // NOTE: react-vtk-viewport's code put this here, so we're copying it. Seems redundant?
+  istyle.setInteractor(renderWindow.getInteractor());
+
+  // Copy previous interactors styles into the new one.
+  if (istyle.setSliceNormal) {
+    istyle.setSliceNormal(oldStyle.getSliceNormal(), oldStyle.getViewUp());
+  }
+  if (istyle.setSlabThickness) {
+    istyle.setSlabThickness(oldStyle.getSlabThickness());
+  }
+
+  istyle.setVolumeMapper(component.volumes[0]);
+}
+
+//TODO: Unused, actually implement it!
+function generateStackScrollCallbackForIndex(windows, index) {
   return ({ worldPos }) => {
     windows.forEach((window, viewportIndex) => {
       if (viewportIndex !== index) {
@@ -421,9 +468,12 @@ function getStackScrollCallbackForIndex(windows, index) {
   };
 }
 
-function getCrosshairCallbackForIndex(windows, index) {
+/**
+ * Function Generator for updating the other views when clicking the crosshair tool
+ */
+function generateCrosshairCallbackForIndex(windows, index) {
   return ({ worldPos }) => {
-    console.log("getting crosshair coords", windows, index)
+    console.log("getting crosshair coords", windows, index);
     // Set camera focal point to world coordinate for linked views
     Object.entries(windows).forEach(([viewportIndex, window]) => {
       if (viewportIndex !== index) {
@@ -464,17 +514,16 @@ function getCrosshairCallbackForIndex(windows, index) {
     });
   };
 }
-
 </script>
 
 <style scoped>
-.col{
+.col {
   max-height: 400px;
 }
 
-button{
-  font-size:14px;
-  line-height:20px;
+button {
+  font-size: 14px;
+  line-height: 20px;
 }
 button > img {
   vertical-align: middle;

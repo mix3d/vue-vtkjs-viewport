@@ -116,6 +116,10 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
         .getProperty()
         .getRGBTransferFunction(0)
         .setMappingRange(lower, upper);
+
+      const onLevelsChanged = publicAPI.getOnLevelsChanged();
+      if (onLevelsChanged)
+        onLevelsChanged({ windowCenter: newLevel, windowWidth: newWin });
     }
   };
 
@@ -181,7 +185,7 @@ export function extend(publicAPI, model, initialValues = {}) {
   // Inheritance
   vtkInteractorStyleMPRSlice.extend(publicAPI, model, initialValues);
 
-  macro.setGet(publicAPI, model, ["volumeMapper"]);
+  macro.setGet(publicAPI, model, ["volumeMapper", "onLevelsChanged"]);
 
   // Object specific methods
   vtkInteractorStyleMPRWindowLevel(publicAPI, model);

@@ -67,10 +67,6 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
     dragEnabled: false
   });
 
-  model.onSetSlice = () => {
-    console.log("set not set")
-  };
-
   // cache for sliceRange
   const cache = {
     sliceNormal: [0, 0, 0],
@@ -81,6 +77,8 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   function updateScrollManipulator() {
     const range = publicAPI.getSliceRange();
     model.scrollManipulator.removeScrollListener();
+    // The Scroll listener has min, max, step, and getValue setValue as params.
+    // Internally, it checks that the result of the GET has changed, and only calls SET if it is new.
     model.scrollManipulator.setScrollListener(
       range[0],
       range[1],
@@ -153,6 +151,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       const camera = renderer.getActiveCamera();
       if (mapper) {
         // prevent zoom manipulator from messing with our focal point
+        // TODO: remove the zoom maninipulator instead?
         camera.setFreezeFocalPoint(true);
 
         // NOTE: Disabling this because it makes it more difficult to switch
@@ -165,7 +164,6 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   };
 
   publicAPI.getSlice = () => {
-    // console.log("getslice",arguments)
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
     const sliceNormal = publicAPI.getSliceNormal();
@@ -178,12 +176,10 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
 
     const fp = camera.getFocalPoint();
     transform.apply(fp);
-    console.log("getslice",fp[0])
     return fp[0];
   };
 
   publicAPI.setSlice = slice => {
-    console.log("setSlice",slice)
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
 
@@ -224,7 +220,9 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       camera.setPosition(...cameraPos);
       camera.setFocalPoint(...slicePoint);
 
-      model.onSetSlice(slicePoint);
+      // run Callback
+      const onScroll = publicAPI.getOnScroll();
+      if (onScroll) onScroll(slicePoint);
     }
   };
 
@@ -272,21 +270,32 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   };
 
   // Slice normal is just camera DOP
-  publicAPI.getSliceNormal = () => {
-    if (model.volumeMapper) {
-      const renderer = model.interactor.getCurrentRenderer();
-      const camera = renderer.getActiveCamera();
-      return camera.getDirectionOfProjection();
-    }
-    return [0, 0, 0];
-  };
+  // publicAPI.getSliceNormal = () => {
+  //   if (model.volumeMapper) {
+  //     const renderer = model.interactor.getCurrentRenderer();
+  //     const camera = renderer.getActiveCamera();
+  //     return camera.getDirectionOfProjection();
+  //   }
+  //   return [0, 0, 0];
+  // };
 
+  publicAPI.getSliceNormal = () => cache.sliceNormal;
+
+  /**
+   * Move the camera to the given slice normal and viewup direction. Viewup can be used to rotate the display of the image around the direction of view.
+   * 
+   * TODO: setting the slice ALWAYS resets to the volume center, but we need to be able to rotate from an arbitrary position, AKA the intersection of all 3 slice planes.
+   */
   // in world space
   publicAPI.setSliceNormal = (normal, viewUp = [0, 1, 0]) => {
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
 
-    //copy arguments so we don't cause sideeffects
+    // Copy arguments to the model, so they can be GET-ed later
+    model.sliceNormal = [...normal];
+    model.viewUp = [...viewUp];
+
+    //copy arguments for internal editing so we don't cause sideeffects
     const _normal = [...normal];
     const _viewUp = [...viewUp];
 
@@ -390,8 +399,8 @@ export function extend(publicAPI, model, initialValues = {}) {
   // Inheritance
   vtkInteractorStyleManipulator.extend(publicAPI, model, initialValues);
 
-  macro.setGet(publicAPI, model, ["volumeMapper", "onSetSlice"]);
-  macro.get(publicAPI, model, ["slabThickness"]);
+  macro.setGet(publicAPI, model, ["volumeMapper", "onScroll"]);
+  macro.get(publicAPI, model, ["slabThickness", "viewUp"]);
 
   // Object specific methods
   vtkInteractorStyleMPRSlice(publicAPI, model);
@@ -408,6 +417,7 @@ export const newInstance = macro.newInstance(
 
 export default Object.assign({ newInstance, extend });
 
+// TODO: work with VTK to change the internal formatting of arrays.
 function vec9toMat3(vec9) {
   if (vec9.length !== 9) {
     throw Error("Array not length 9");

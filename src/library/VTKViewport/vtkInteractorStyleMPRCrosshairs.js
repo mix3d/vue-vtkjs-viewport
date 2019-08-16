@@ -69,14 +69,14 @@ function vtkInteractorStyleMPRCrosshairs(publicAPI, model) {
   function launchCallback(callData) {
     const pos = [callData.position.x, callData.position.y];
     const renderer = callData.pokedRenderer;
-    const callback = publicAPI.getCallback();
+    const onClickCallback = publicAPI.getOnClickCallback();
     const dPos = vtkCoordinate.newInstance();
     dPos.setCoordinateSystemToDisplay();
     dPos.setValue(pos[0], pos[1], 0);
     const worldPos = dPos.getComputedWorldValue(renderer);
 
     if (worldPos.length) {
-      callback({ worldPos, displayPos: pos });
+      onClickCallback({ worldPos, displayPos: pos });
     }
 
     publicAPI.invokeInteractionEvent({ type: "InteractionEvent" });
@@ -153,7 +153,7 @@ export function extend(publicAPI, model, initialValues = {}) {
   // Inheritance
   vtkInteractorStyleMPRSlice.extend(publicAPI, model, initialValues);
 
-  macro.setGet(publicAPI, model, ["volumeMapper", "callback"]);
+  macro.setGet(publicAPI, model, ["volumeMapper", "onClickCallback"]);
 
   // Object specific methods
   vtkInteractorStyleMPRCrosshairs(publicAPI, model);
