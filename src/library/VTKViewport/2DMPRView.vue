@@ -345,6 +345,5 @@ export default {
   width: 100%;
   height: 100%;
   position: relative;
-  border: solid 1px red;
 }
 </style>

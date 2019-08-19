@@ -21,7 +21,7 @@
         </button>
       </div>
       <div class="row">
-        <div class="col temp" v-for="(view, key) in viewDataArray" :key="key">
+        <div class="col" v-for="(view, key) in viewDataArray" :key="key">
           <table>
             <tr>
               <td>
@@ -226,32 +226,30 @@ export default {
       // TODO:
       switch (tool) {
         case "LEVEL":
-          Object.entries(this.components).forEach(
-            ([viewportIndex, component]) => {
-              const istyle = vtkInteractorStyleMPRWindowLevel.newInstance();
-              istyle.setOnScroll(slicePosition =>
-                this.onScrolled({ slicePosition, index: viewportIndex })
-              );
-              istyle.setOnLevelsChanged((levels) => {
-                this.updateLevels({...levels, index:viewportIndex})
-              });
-              setInteractor(component, istyle);
-            }
-          );
+          Object.entries(this.components).forEach(this.setLevelTool);
           break;
         case "SELECT":
-          Object.entries(this.components).forEach(
-            ([viewportIndex, component]) => {
-              const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
-              istyle.setOnScroll(slicePosition =>
-                this.onScrolled({ slicePosition, index: viewportIndex })
-              );
-              istyle.setOnClickCallback(this.onCrosshairPointSelected);
-              setInteractor(component, istyle);
-            }
-          );
+          Object.entries(this.components).forEach(this.setCrosshairTool);
           break;
       }
+    },
+    setLevelTool([viewportIndex, component]) {
+      const istyle = vtkInteractorStyleMPRWindowLevel.newInstance();
+      istyle.setOnScroll(slicePosition =>
+        this.onScrolled({ slicePosition, index: viewportIndex })
+      );
+      istyle.setOnLevelsChanged((levels) => {
+        this.updateLevels({...levels, index:viewportIndex})
+      });
+      setInteractor(component, istyle);
+    },
+    setCrosshairTool([viewportIndex, component]) {
+      const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
+      istyle.setOnScroll(slicePosition =>
+        this.onScrolled({ slicePosition, index: viewportIndex })
+      );
+      istyle.setOnClickCallback(this.onCrosshairPointSelected);
+      setInteractor(component, istyle);
     },
     onScrolled({ slicePosition, index }) {
       console.log("onscrolled", slicePosition, index);
@@ -347,7 +345,6 @@ export default {
         // get initial window leveling
         this[viewportIndex].windowWidth = windowWidth;
         this[viewportIndex].windowLevel = windowLevel;
-        
 
         const renderWindow = component.genericRenderWindow.getRenderWindow();
         const renderer = component.genericRenderWindow.getRenderer();
@@ -357,15 +354,10 @@ export default {
           .getInteractorStyle()
           .setVolumeMapper(null);
 
-        // TODO: bind interactor onscroll here
-        const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
-        renderWindow.getInteractor().setInteractorStyle(istyle);
-        istyle.setVolumeMapper(component.volumes[0]);
+        // default to the level tool
+        this.setLevelTool([viewportIndex, component])
 
-        istyle.setOnClickCallback(
-          generateCrosshairCallbackForIndex(this.components, viewportIndex)
-        );
-
+        //setup the svg widget manager
         const svgWidgetManager = vtkSVGWidgetManager.newInstance();
         svgWidgetManager.setRenderer(renderer);
         svgWidgetManager.setScale(1);
@@ -468,6 +460,8 @@ function setInteractor(component, istyle) {
   istyle.setVolumeMapper(component.volumes[0]);
 }
 
+
+
 //TODO: Unused, actually implement it!
 function generateStackScrollCallbackForIndex(windows, index) {
   return ({ worldPos }) => {
@@ -547,10 +541,6 @@ const getVOI = volume => {
 <style scoped>
 .col {
   max-height: 400px;
-}
-
-.temp {
-  border: 1px solid blue;
 }
 
 button {
