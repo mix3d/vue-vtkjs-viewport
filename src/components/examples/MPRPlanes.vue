@@ -11,11 +11,17 @@
     </div>
     <div v-else>
       <div>
-        <button @click="selectTool('LEVEL')" :class="{active:activeTool==='LEVEL'}">
+        <button
+          @click="selectTool('LEVEL')"
+          :class="{ active: activeTool === 'LEVEL' }"
+        >
           <img src="https://img.icons8.com/material-rounded/344/contrast.png" />
           Level
         </button>
-        <button @click="selectTool('SELECT')" :class="{active:activeTool==='SELECT'}">
+        <button
+          @click="selectTool('SELECT')"
+          :class="{ active: activeTool === 'SELECT' }"
+        >
           <img src="https://img.icons8.com/material/344/define-location.png" />
           Select
         </button>
@@ -25,7 +31,7 @@
           <table>
             <tr>
               <td>
-                <strong>{{key}}</strong>
+                <strong>{{ key }}</strong>
               </td>
             </tr>
             <tr>
@@ -39,7 +45,7 @@
                   step="1"
                   v-model.number="view.slicePlaneXRotation"
                 />
-                <span>{{view.slicePlaneXRotation}}&deg;</span>
+                <span>{{ view.slicePlaneXRotation }}&deg;</span>
               </td>
             </tr>
             <tr>
@@ -53,22 +59,42 @@
                   step="1"
                   v-model.number="view.slicePlaneYRotation"
                 />
-                <span>{{view.slicePlaneYRotation}}&deg;</span>
+                <span>{{ view.slicePlaneYRotation }}&deg;</span>
               </td>
             </tr>
             <tr>
               <td>Rotate View</td>
               <td>
-                <input type="radio" :id="`${key}1rot`" :value="0" v-model="view.viewRotation" />
+                <input
+                  type="radio"
+                  :id="`${key}1rot`"
+                  :value="0"
+                  v-model="view.viewRotation"
+                />
                 <label :for="`${key}1rot`">0&deg;</label>
 
-                <input type="radio" :id="`${key}2rot`" :value="90" v-model="view.viewRotation" />
+                <input
+                  type="radio"
+                  :id="`${key}2rot`"
+                  :value="90"
+                  v-model="view.viewRotation"
+                />
                 <label :for="`${key}2rot`">90&deg;</label>
 
-                <input type="radio" :id="`${key}3rot`" :value="180" v-model="view.viewRotation" />
+                <input
+                  type="radio"
+                  :id="`${key}3rot`"
+                  :value="180"
+                  v-model="view.viewRotation"
+                />
                 <label :for="`${key}3rot`">180&deg;</label>
 
-                <input type="radio" :id="`${key}4rot`" :value="270" v-model="view.viewRotation" />
+                <input
+                  type="radio"
+                  :id="`${key}4rot`"
+                  :value="270"
+                  v-model="view.viewRotation"
+                />
                 <label :for="`${key}4rot`">270&deg;</label>
               </td>
             </tr>
@@ -83,26 +109,47 @@
                   step=".1"
                   v-model.number="view.sliceThickness"
                 />
-                <span>{{view.sliceThickness}}</span>
+                <span>{{ view.sliceThickness }}</span>
               </td>
             </tr>
             <tr>
               <td>Blend Mode</td>
               <td>
-                <input type="radio" :id="`${key}1blend`" value="none" v-model="view.blendMode" />
+                <input
+                  type="radio"
+                  :id="`${key}1blend`"
+                  value="none"
+                  v-model="view.blendMode"
+                />
                 <label :for="`${key}1blend`">None</label>
 
-                <input type="radio" :id="`${key}2blend`" value="MIP" v-model="view.blendMode" />
+                <input
+                  type="radio"
+                  :id="`${key}2blend`"
+                  value="MIP"
+                  v-model="view.blendMode"
+                />
                 <label :for="`${key}2blend`">MIP</label>
 
-                <input type="radio" :id="`${key}3blend`" value="MINIP" v-model="view.blendMode" />
+                <input
+                  type="radio"
+                  :id="`${key}3blend`"
+                  value="MINIP"
+                  v-model="view.blendMode"
+                />
                 <label :for="`${key}3blend`">MinIP</label>
 
-                <input type="radio" :id="`${key}4blend`" value="AVG" v-model="view.blendMode" />
+                <input
+                  type="radio"
+                  :id="`${key}4blend`"
+                  value="AVG"
+                  v-model="view.blendMode"
+                />
                 <label :for="`${key}4blend`">Average</label>
               </td>
             </tr>
           </table>
+
           <view-2d-mpr
             :volumes="volumes"
             v-bind="view"
@@ -118,7 +165,6 @@
 <script>
 import {
   View2dMPR,
-  View,
   vtkInteractorStyleMPRCrosshairs,
   vtkInteractorStyleMPRWindowLevel,
   vtkSVGWidgetManager,
@@ -131,14 +177,16 @@ import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
-import vtkMath from "vtk.js/Sources/Common/Core/Math";
+// import vtkMath from "vtk.js/Sources/Common/Core/Math";
+import vtkPlane from "vtk.js/Sources/Common/DataModel/Plane";
+
+import throttle from "lodash/throttle";
 
 import { files } from "@/components/examples";
 
 export default {
   components: {
-    "view-2d-mpr": View2dMPR,
-    "view-generic": View
+    "view-2d-mpr": View2dMPR
   },
   data() {
     return {
@@ -167,7 +215,7 @@ export default {
         sliceThickness: 0.1,
         blendMode: "none",
         windowCenter: 0,
-        windowWidth: 0,
+        windowWidth: 0
       },
       left: {
         slicePlaneNormal: [1, 0, 0],
@@ -178,7 +226,7 @@ export default {
         sliceThickness: 0.1,
         blendMode: "none",
         windowCenter: 0,
-        windowWidth: 0,
+        windowWidth: 0
       },
       front: {
         slicePlaneNormal: [0, 1, 0],
@@ -189,14 +237,14 @@ export default {
         sliceThickness: 0.1,
         blendMode: "none",
         windowCenter: 0,
-        windowWidth: 0,
+        windowWidth: 0
       }
     };
   },
   computed: {
     viewDataArray() {
       return { top: this.top, left: this.left, front: this.front };
-    },
+    }
   },
   created() {
     // non-reactive data
@@ -238,8 +286,8 @@ export default {
       istyle.setOnScroll(slicePosition =>
         this.onScrolled({ slicePosition, index: viewportIndex })
       );
-      istyle.setOnLevelsChanged((levels) => {
-        this.updateLevels({...levels, index:viewportIndex})
+      istyle.setOnLevelsChanged(levels => {
+        this.updateLevels({ ...levels, index: viewportIndex });
       });
       setInteractor(component, istyle);
     },
@@ -252,21 +300,30 @@ export default {
       setInteractor(component, istyle);
     },
     onScrolled({ slicePosition, index }) {
-      console.log("onscrolled", slicePosition, index);
+      // console.log("onscrolled", slicePosition, index);
+      let planes = [];
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
         const camera = component.genericRenderWindow
           .getRenderer()
           .getActiveCamera();
-        const distance = camera.getDistance();
-        const dop = camera.getDirectionOfProjection();
-        vtkMath.normalize(dop);
-        // console.log("dop", dop)
-        const cameraPos = [
-          slicePosition[0] - dop[0] * distance,
-          slicePosition[1] - dop[1] * distance,
-          slicePosition[2] - dop[2] * distance
-        ];
+
+        planes.push({
+          position: camera.getFocalPoint(),
+          normal: this[viewportIndex].slicePlaneNormal
+        });
+
+        // const distance = camera.getDistance();
+        // const dop = camera.getDirectionOfProjection();
+        // vtkMath.normalize(dop);
+        // // console.log("dop", dop)
+        // const cameraPos = [
+        //   slicePosition[0] - dop[0] * distance,
+        //   slicePosition[1] - dop[1] * distance,
+        //   slicePosition[2] - dop[2] * distance
+        // ];
       });
+      this.planeIntersecton = getPlaneIntersection(...planes);
+      // console.log("plane intersections:", position.x);
     },
     onCrosshairPointSelected({ index, worldPos }) {
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
@@ -310,7 +367,7 @@ export default {
     },
     //TODO: implement this
     updateLevels({ windowCenter, windowWidth, index }) {
-      console.log(index+" levels", windowCenter, windowWidth)
+      console.log(index + " levels", windowCenter, windowWidth);
 
       this[index].windowCenter = windowCenter;
       this[index].windowWidth = windowWidth;
@@ -340,7 +397,7 @@ export default {
       return component => {
         this.components[viewportIndex] = component;
 
-        const {windowWidth, windowLevel} = getVOI(component.volumes[0])
+        const { windowWidth, windowLevel } = getVOI(component.volumes[0]);
 
         // get initial window leveling
         this[viewportIndex].windowWidth = windowWidth;
@@ -355,7 +412,7 @@ export default {
           .setVolumeMapper(null);
 
         // default to the level tool
-        this.setLevelTool([viewportIndex, component])
+        this.setLevelTool([viewportIndex, component]);
 
         //setup the svg widget manager
         const svgWidgetManager = vtkSVGWidgetManager.newInstance();
@@ -451,7 +508,7 @@ function setInteractor(component, istyle) {
 
   // Copy previous interactors styles into the new one.
   if (istyle.setSliceNormal && oldStyle.getSliceNormal()) {
-    console.log("setting slicenormal from old normal")
+    // console.log("setting slicenormal from old normal");
     istyle.setSliceNormal(oldStyle.getSliceNormal(), oldStyle.getViewUp());
   }
   if (istyle.setSlabThickness && oldStyle.getSlabThickness()) {
@@ -460,67 +517,99 @@ function setInteractor(component, istyle) {
   istyle.setVolumeMapper(component.volumes[0]);
 }
 
-
-
 //TODO: Unused, actually implement it!
-function generateStackScrollCallbackForIndex(windows, index) {
-  return ({ worldPos }) => {
-    windows.forEach((window, viewportIndex) => {
-      if (viewportIndex !== index) {
-        const renderWindow = window.genericRenderWindow.getRenderWindow();
-        const istyle = renderWindow.getInteractor.getInteractorStyle();
-        const sliceNormal = istyle.getSliceNormal();
-      }
-    });
-  };
-}
+// function generateStackScrollCallbackForIndex(windows, index) {
+//   return ({ worldPos }) => {
+//     windows.forEach((window, viewportIndex) => {
+//       if (viewportIndex !== index) {
+//         const renderWindow = window.genericRenderWindow.getRenderWindow();
+//         const istyle = renderWindow.getInteractor.getInteractorStyle();
+//         const sliceNormal = istyle.getSliceNormal();
+//       }
+//     });
+//   };
+// }
 
 /**
  * Function Generator for updating the other views when clicking the crosshair tool
  */
-function generateCrosshairCallbackForIndex(windows, index) {
-  return ({ worldPos }) => {
-    console.log("getting crosshair coords", windows, index);
-    // Set camera focal point to world coordinate for linked views
-    Object.entries(windows).forEach(([viewportIndex, window]) => {
-      if (viewportIndex !== index) {
-        // We are basically doing the same as getSlice but with the world coordinate
-        // that we want to jump to instead of the camera focal point.
-        // I would rather do the camera adjustment directly but I keep
-        // doing it wrong and so this is good enough for now.
-        const renderWindow = window.genericRenderWindow.getRenderWindow();
+// function generateCrosshairCallbackForIndex(windows, index) {
+//   return ({ worldPos }) => {
+//     console.log("getting crosshair coords", windows, index);
+//     // Set camera focal point to world coordinate for linked views
+//     Object.entries(windows).forEach(([viewportIndex, window]) => {
+//       if (viewportIndex !== index) {
+//         // We are basically doing the same as getSlice but with the world coordinate
+//         // that we want to jump to instead of the camera focal point.
+//         // I would rather do the camera adjustment directly but I keep
+//         // doing it wrong and so this is good enough for now.
+//         const renderWindow = window.genericRenderWindow.getRenderWindow();
 
-        const istyle = renderWindow.getInteractor().getInteractorStyle();
-        const sliceNormal = istyle.getSliceNormal();
-        const transform = vtkMatrixBuilder
-          .buildFromDegree()
-          .identity()
-          .rotateFromDirections(sliceNormal, [1, 0, 0]);
+//         const istyle = renderWindow.getInteractor().getInteractorStyle();
+//         const sliceNormal = istyle.getSliceNormal();
+//         const transform = vtkMatrixBuilder
+//           .buildFromDegree()
+//           .identity()
+//           .rotateFromDirections(sliceNormal, [1, 0, 0]);
 
-        const mutatedWorldPos = worldPos.slice();
-        transform.apply(mutatedWorldPos);
-        const slice = mutatedWorldPos[0];
+//         const mutatedWorldPos = worldPos.slice();
+//         transform.apply(mutatedWorldPos);
+//         const slice = mutatedWorldPos[0];
 
-        istyle.setSlice(slice);
+//         istyle.setSlice(slice);
 
-        renderWindow.render();
-      }
+//         renderWindow.render();
+//       }
 
-      const renderer = window.genericRenderWindow.getRenderer();
-      const wPos = vtkCoordinate.newInstance();
-      wPos.setCoordinateSystemToWorld();
-      wPos.setValue(worldPos);
+//       const renderer = window.genericRenderWindow.getRenderer();
+//       const wPos = vtkCoordinate.newInstance();
+//       wPos.setCoordinateSystemToWorld();
+//       wPos.setValue(worldPos);
 
-      const displayPosition = wPos.getComputedDisplayValue(renderer);
-      const { svgWidgetManager } = window;
-      window.svgWidgets.crosshairsWidget.setPoint(
-        displayPosition[0],
-        displayPosition[1]
+//       const displayPosition = wPos.getComputedDisplayValue(renderer);
+//       const { svgWidgetManager } = window;
+//       window.svgWidgets.crosshairsWidget.setPoint(
+//         displayPosition[0],
+//         displayPosition[1]
+//       );
+//       svgWidgetManager.render();
+//     });
+//   };
+// }
+
+/**
+ * Planes are of type `{position:[x,y,z], normal:[x,y,z]}`
+ */
+const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
+  try {
+    let line = vtkPlane.intersectWithPlane(
+      plane1.position,
+      plane1.normal,
+      plane2.position,
+      plane2.normal
+    );
+    if (line.intersection) {
+      const { l0, l1 } = line;
+      const intersectionLocation = vtkPlane.intersectWithLine(
+        l0,
+        l1,
+        plane3.position,
+        plane3.normal
       );
-      svgWidgetManager.render();
-    });
-  };
-}
+      // There is an issue with intersect returning false when the intersection is outside of the defined points, AND if the line and plane are parallel
+      // https://github.com/Kitware/vtk-js/issues/1189
+      if (
+        intersectionLocation.intersect ||
+        intersectionLocation.t < Number.MAX_VALUE
+      ) {
+        return intersectionLocation;
+      }
+    }
+  } catch (err) {
+    console.log("some issue", err);
+  }
+  return NaN;
+}, 300);
 
 const getVOI = volume => {
   // Note: This controls window/level

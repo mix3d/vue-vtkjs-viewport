@@ -101,7 +101,6 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   let interactorSub = null;
   const superSetInteractor = publicAPI.setInteractor;
   publicAPI.setInteractor = interactor => {
-    console.log("setting interactor")
     superSetInteractor(interactor);
     if (cameraSub) {
       cameraSub.unsubscribe();

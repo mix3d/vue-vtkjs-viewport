@@ -11,18 +11,17 @@
  */
 
 import vtkGenericRenderWindow from "vtk.js/Sources/Rendering/Misc/GenericRenderWindow";
-import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
+import vtkRenderer from "vtk.js/Sources/Rendering/Core/Renderer";
 
 import { quat, vec3, mat4 } from "gl-matrix";
 
 // Use modified MPRSlice interactor
 import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice";
-import vtkInteractorStyleMPRCrosshairs from './vtkInteractorStyleMPRCrosshairs';
-import vtkInteractorStyleMPRWindowLevel from './vtkInteractorStyleMPRWindowLevel';
+import vtkInteractorStyleMPRCrosshairs from "./vtkInteractorStyleMPRCrosshairs";
+import vtkInteractorStyleMPRWindowLevel from "./vtkInteractorStyleMPRWindowLevel";
 
 import { createSub } from "../lib/createSub.js";
 import { degrees2radians } from "../lib/math/angles.js";
-import createLabelPipeline from "./createLabelPipeline";
 
 import ViewportOverlay from "../ViewportOverlay/ViewportOverlay.vue";
 
@@ -37,25 +36,39 @@ export default {
     index: String,
 
     //Slice Plane
-    slicePlaneNormal: { type: Array, default(){ return [0,0,1] }},
-    slicePlaneXRotation: { type: Number, default: 0},
-    slicePlaneYRotation: { type: Number, default: 0},
+    slicePlaneNormal: {
+      type: Array,
+      default() {
+        return [0, 0, 1];
+      }
+    },
+    slicePlaneXRotation: { type: Number, default: 0 },
+    slicePlaneYRotation: { type: Number, default: 0 },
     // Camera view Up
-    sliceViewUp: { type: Array, default(){ return [0,1,0] }},
+    sliceViewUp: {
+      type: Array,
+      default() {
+        return [0, 1, 0];
+      }
+    },
     //0,90,180,270 rotation around the view axis
-    viewRotation: {type: Number, default: 0, validator: v => [0,90,180,270].includes(v)},
+    viewRotation: {
+      type: Number,
+      default: 0,
+      validator: v => [0, 90, 180, 270].includes(v)
+    },
 
-    sliceThickness: {type: Number, default: 0, validator: v => v > 0 },
+    sliceThickness: { type: Number, default: 0, validator: v => v > 0 },
 
     //leveling
-    windowWidth: {type: Number, default: 0},
-    windowCenter: {type: Number, default: 0},
+    windowWidth: { type: Number, default: 0 },
+    windowCenter: { type: Number, default: 0 },
 
-    blendMode: {type: String},
+    blendMode: { type: String },
 
     dataDetails: Object,
     onCreated: Function,
-    onDestroyed: Function,
+    onDestroyed: Function
   },
   created() {
     this.genericRenderWindow = null;
@@ -67,7 +80,7 @@ export default {
     return {
       subs: {
         interactor: createSub(),
-        data: createSub(),
+        data: createSub()
       }
     };
   },
@@ -78,20 +91,19 @@ export default {
       this.genericRenderWindow.resize();
     },
     updateVolumesForRendering(volumes) {
-      if(volumes && volumes.length){
+      if (volumes && volumes.length) {
         volumes.forEach(volume => {
           if (!volume.isA("vtkVolume")) {
             console.warn("Data to <Vtk2D> is not vtkVolume data");
           }
           this.renderer.addVolume(volume);
         });
-      }
-      else {
-        this.renderer.removeAllVolumes()
+      } else {
+        this.renderer.removeAllVolumes();
       }
       this.renderWindow.render();
     },
-    updateSlicePlane(ops={}){
+    updateSlicePlane(ops = {}) {
       // TODO: optimize so you don't have to calculate EVERYTHING every time?
 
       // TODO: Confirm that we never need to pass overrides
@@ -104,16 +116,15 @@ export default {
         viewRotation: this.viewRotation,
         //merge / overwrite function inputs
         ...ops
-      }
+      };
 
       // rotate around the vector of the cross product of the plane and viewup as the X component
-      let sliceXRot = []
-      vec3.cross(sliceXRot, input.sliceViewUp, input.slicePlaneNormal)
+      let sliceXRot = [];
+      vec3.cross(sliceXRot, input.sliceViewUp, input.slicePlaneNormal);
       vec3.normalize(sliceXRot, sliceXRot);
 
-
       // rotate the viewUp vector as the Y component
-      let sliceYRot = this.sliceViewUp
+      let sliceYRot = this.sliceViewUp;
 
       // const yQuat = quat.create();
       // quat.setAxisAngle(yQuat, input.sliceViewUp, degrees2radians(input.sliceYRot));
@@ -126,15 +137,33 @@ export default {
 
       // vec3.transformQuat(this.cachedSlicePlane, this.slicePlaneNormal, planeQuat);
 
-      const planeMat = mat4.create()
-      mat4.rotate(planeMat, planeMat, degrees2radians(input.sliceYRot), sliceYRot);
-      mat4.rotate(planeMat, planeMat, degrees2radians(input.sliceXRot), sliceXRot);
-      vec3.transformMat4(this.cachedSlicePlane, this.slicePlaneNormal, planeMat);
+      const planeMat = mat4.create();
+      mat4.rotate(
+        planeMat,
+        planeMat,
+        degrees2radians(input.sliceYRot),
+        sliceYRot
+      );
+      mat4.rotate(
+        planeMat,
+        planeMat,
+        degrees2radians(input.sliceXRot),
+        sliceXRot
+      );
+      vec3.transformMat4(
+        this.cachedSlicePlane,
+        this.slicePlaneNormal,
+        planeMat
+      );
 
       // Rotate the viewUp in 90 degree increments
       const viewRotQuat = quat.create();
       // Use - degrees since the axis of rotation should really be the direction of projection, which is the negative of the plane normal
-      quat.setAxisAngle(viewRotQuat, this.cachedSlicePlane, degrees2radians(-input.viewRotation));
+      quat.setAxisAngle(
+        viewRotQuat,
+        this.cachedSlicePlane,
+        degrees2radians(-input.viewRotation)
+      );
       quat.normalize(viewRotQuat, viewRotQuat);
 
       // rotate the ViewUp with the x and z rotations
@@ -153,10 +182,10 @@ export default {
         .getInteractorStyle()
         .setSliceNormal(this.cachedSlicePlane, this.cachedSliceViewUp);
 
-      renderWindow.render()
+      renderWindow.render();
     },
-    onCrosshairPointSelected(data){
-      this.$emit('crosshairPointSelected',{...data, index:this.index})
+    onCrosshairPointSelected(data) {
+      this.$emit("crosshairPointSelected", { ...data, index: this.index });
     }
   },
   watch: {
@@ -166,52 +195,52 @@ export default {
     },
 
     // Calculate the new normals after applying rotations to the untouched originals
-    slicePlaneNormal(){
+    slicePlaneNormal() {
       this.updateSlicePlane();
     },
-    slicePlaneXRotation(){
-      this.updateSlicePlane()
-    },
-    slicePlaneYRotation(){
+    slicePlaneXRotation() {
       this.updateSlicePlane();
     },
-    sliceViewUp(){
+    slicePlaneYRotation() {
       this.updateSlicePlane();
     },
-    viewRotation(){
+    sliceViewUp() {
+      this.updateSlicePlane();
+    },
+    viewRotation() {
       this.updateSlicePlane();
     },
 
     sliceThickness(thicc) {
       const istyle = this.renderWindow.getInteractor().getInteractorStyle();
       //set thickness if the current interactor has it
-      istyle.setSlabThickness && istyle.setSlabThickness(thicc)
+      istyle.setSlabThickness && istyle.setSlabThickness(thicc);
       this.renderWindow.render();
     },
 
-    blendMode(mode){
-      if(this.sliceThickness > 1) {
-        switch(mode){
+    blendMode(mode) {
+      if (this.sliceThickness > 1) {
+        switch (mode) {
           case "MIP":
-            this.volumes[0].getMapper().setBlendModeToMaximumIntensity()
+            this.volumes[0].getMapper().setBlendModeToMaximumIntensity();
             break;
           case "MINIP":
-            this.volumes[0].getMapper().setBlendModeToMinimumIntensity()
+            this.volumes[0].getMapper().setBlendModeToMinimumIntensity();
             break;
           case "AVG":
-            this.volumes[0].getMapper().setBlendModeToAverageIntensity()
+            this.volumes[0].getMapper().setBlendModeToAverageIntensity();
             break;
           default:
-            this.volumes[0].getMapper().setBlendModeToComposite()
+            this.volumes[0].getMapper().setBlendModeToComposite();
             break;
         }
       }
       this.renderWindow.render();
-    },
+    }
   },
   computed: {
     voi() {
-      return {windowWidth: this.windowWidth, windowCenter: this.windowCenter};
+      return { windowWidth: this.windowWidth, windowCenter: this.windowCenter };
     }
   },
   mounted() {
@@ -232,9 +261,6 @@ export default {
     let actors = [];
     let volumes = [];
 
-    const radius = 5;
-    const label = 1;
-
     this.renderer = this.genericRenderWindow.getRenderer();
     this.renderWindow = this.genericRenderWindow.getRenderWindow();
     // update view node tree so that vtkOpenGLHardwareSelector can access the vtkOpenGLRenderer instance.
@@ -250,15 +276,11 @@ export default {
       actors = actors.concat(this.actors);
     }
 
-    if (this.labelmap && this.labelmap.actor) {
-      actors = actors.concat(this.labelmap.actor);
-    }
-
     if (this.volumes) {
       volumes = volumes.concat(this.volumes);
     }
 
-        /*
+    /*
     TODO: Enable normal orthogonal slicing / window level as default instead of
     rotation tool
 
@@ -323,7 +345,7 @@ export default {
     // Fallback to manually cleanup things.
     this.genericRenderWindow.setContainer(null);
     this.genericRenderWindow.getOpenGLRenderWindow().delete();
-    this.genericRenderWindow.delete()
+    this.genericRenderWindow.delete();
 
     delete this.genericRenderWindow;
 
@@ -336,7 +358,6 @@ export default {
     }
   }
 };
-
 </script>
 
 <style lang="scss" scoped>
