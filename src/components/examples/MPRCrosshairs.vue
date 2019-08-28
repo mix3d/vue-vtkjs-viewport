@@ -32,7 +32,6 @@ import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
-import vtkMath from "vtk.js/Sources/Common/Core/Math";
 
 import {
   View2D,

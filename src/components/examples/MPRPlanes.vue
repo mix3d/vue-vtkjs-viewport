@@ -205,7 +205,8 @@ export default {
         value: 1963
       },
       loading: true,
-      selectedFile: files[0],
+      selectedFile: files[2],
+      sliceIntersection: [0, 0, 0],
       top: {
         slicePlaneNormal: [0, 0, 1],
         sliceViewUp: [0, -1, 0],
@@ -483,6 +484,9 @@ export default {
           this.updateColorLevel();
           this.updateColorWindow();
 
+          // TODO: find the volume center and set that as the slice intersection point.
+          // Refactor the MPR slice to set the focal point instead of defaulting to volume center
+
           this.volumes = [volumeActor];
           this.loading = false;
         });
@@ -579,6 +583,7 @@ function setInteractor(component, istyle) {
 
 /**
  * Planes are of type `{position:[x,y,z], normal:[x,y,z]}`
+ * returns an [x,y,z] array, or NaN if they do not intersect.
  */
 const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
   try {
@@ -602,11 +607,11 @@ const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
         intersectionLocation.intersect ||
         intersectionLocation.t < Number.MAX_VALUE
       ) {
-        return intersectionLocation;
+        return intersectionLocation.x;
       }
     }
   } catch (err) {
-    console.log("some issue", err);
+    console.log("some issue calculating the plane intersection", err);
   }
   return NaN;
 }, 300);

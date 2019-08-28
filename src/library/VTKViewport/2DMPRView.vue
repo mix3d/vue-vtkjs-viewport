@@ -89,6 +89,10 @@ export default {
     onResize() {
       // TODO: debounce
       this.genericRenderWindow.resize();
+
+      const [width, height] = [this.$refs.container.offsetWidth, this.$refs.container.offsetHeight];
+
+      console.log("container:", width, height)
     },
     updateVolumesForRendering(volumes) {
       if (volumes && volumes.length) {
