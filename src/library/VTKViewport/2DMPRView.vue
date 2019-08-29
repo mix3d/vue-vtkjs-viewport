@@ -2,6 +2,13 @@
   <div v-if="volumes && volumes.length" class="viewer2d">
     <div ref="container" class="container2d" />
     <ViewportOverlay v-bind="dataDetails" :voi="voi" />
+    <MPRInteractor
+      :width="width"
+      :height="height"
+      :xRotation="slicePlaneXRotation"
+      :point="screenCoordSliceIntersection"
+      @rotate="onRotate"
+    />
   </div>
 </template>
 
@@ -20,20 +27,30 @@ import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice";
 import vtkInteractorStyleMPRCrosshairs from "./vtkInteractorStyleMPRCrosshairs";
 import vtkInteractorStyleMPRWindowLevel from "./vtkInteractorStyleMPRWindowLevel";
 
+import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
+
 import { createSub } from "../lib/createSub.js";
 import { degrees2radians } from "../lib/math/angles.js";
 
 import ViewportOverlay from "../ViewportOverlay/ViewportOverlay.vue";
+import MPRInteractor from "../ViewportOverlay/MPRInteractor.vue";
 
 export default {
   name: "view-2d-mpr",
-  components: { ViewportOverlay },
+  components: { ViewportOverlay, MPRInteractor },
   props: {
     volumes: { type: Array, required: true },
     actors: Array,
 
     // Front, Side, Top, etc
     index: String,
+
+    sliceIntersection: {
+      type: Array,
+      default() {
+        return [0, 0, 0];
+      }
+    },
 
     //Slice Plane
     slicePlaneNormal: {
@@ -78,6 +95,8 @@ export default {
   },
   data() {
     return {
+      width: 0,
+      height: 0,
       subs: {
         interactor: createSub(),
         data: createSub()
@@ -86,13 +105,16 @@ export default {
   },
 
   methods: {
+    onRotate(axis, angle){
+      this.$emit('rotate', this.index, axis, angle)
+    },
     onResize() {
       // TODO: debounce
       this.genericRenderWindow.resize();
 
       const [width, height] = [this.$refs.container.offsetWidth, this.$refs.container.offsetHeight];
-
-      console.log("container:", width, height)
+      this.width = width;
+      this.height = height;
     },
     updateVolumesForRendering(volumes) {
       if (volumes && volumes.length) {
@@ -243,6 +265,20 @@ export default {
     }
   },
   computed: {
+    screenCoordSliceIntersection() {
+      const point3d = this.sliceIntersection;
+      // console.log("computing screenCoord", point3d)
+      if (this.renderer) {
+        const wPos = vtkCoordinate.newInstance();
+        wPos.setCoordinateSystemToWorld();
+        wPos.setValue(point3d);
+        // console.log("converted to:", wPos.getComputedDisplayValue(this.renderer))
+        return wPos.getComputedDisplayValue(this.renderer);
+      }
+      else{
+        return [0,0]
+      }
+    },
     voi() {
       return { windowWidth: this.windowWidth, windowCenter: this.windowCenter };
     }
@@ -322,7 +358,7 @@ export default {
     this.updateSlicePlane();
 
     // force the initial draw to set the canvas to the parent bounds.
-    this.genericRenderWindow.resize();
+    this.onResize();
 
     if (this.onCreated) {
       /**

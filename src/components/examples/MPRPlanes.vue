@@ -25,6 +25,7 @@
           <img src="https://img.icons8.com/material/344/define-location.png" />
           Select
         </button>
+        <p> TEST: {{sliceIntersection}} </p>
       </div>
       <div class="row">
         <div class="col" v-for="(view, key) in viewDataArray" :key="key">
@@ -152,9 +153,11 @@
 
           <view-2d-mpr
             :volumes="volumes"
+            :sliceIntersection="sliceIntersection"
             v-bind="view"
             :onCreated="saveComponentReference(key)"
             :index="key"
+            @rotate="onRotate"
           />
         </div>
       </div>
@@ -208,6 +211,7 @@ export default {
       selectedFile: files[2],
       sliceIntersection: [0, 0, 0],
       top: {
+        color: "#F8B42C",
         slicePlaneNormal: [0, 0, 1],
         sliceViewUp: [0, -1, 0],
         slicePlaneXRotation: 0,
@@ -219,6 +223,7 @@ export default {
         windowWidth: 0
       },
       left: {
+        color: "#A62CF8",
         slicePlaneNormal: [1, 0, 0],
         sliceViewUp: [0, 0, -1],
         slicePlaneXRotation: 0,
@@ -230,7 +235,8 @@ export default {
         windowWidth: 0
       },
       front: {
-        slicePlaneNormal: [0, 1, 0],
+        color:"#2C92F8",
+        slicePlaneNormal: [0, -1, 0],
         sliceViewUp: [0, 0, -1],
         slicePlaneXRotation: 0,
         slicePlaneYRotation: 0,
@@ -297,8 +303,31 @@ export default {
       istyle.setOnScroll(slicePosition =>
         this.onScrolled({ slicePosition, index: viewportIndex })
       );
-      istyle.setOnClickCallback(this.onCrosshairPointSelected);
+      istyle.setOnClickCallback( ({worldPos}) => this.onCrosshairPointSelected({worldPos, index: viewportIndex}));
       setInteractor(component, istyle);
+    },
+    onRotate(index, axis, angle) {
+      console.log(index, axis, angle)
+      switch(index){
+        case 'top':
+          if(axis === 'x')
+            this.front.slicePlaneYRotation = angle;
+          else if(axis === 'y')
+            this.left.slicePlaneYRotation = angle;
+          break;
+        case 'left':
+          if(axis === 'x')
+            this.top.slicePlaneXRotation = angle;
+          else if(axis === 'y')
+            this.front.slicePlaneXRotation = angle;
+          break;
+        case 'front':
+          if(axis === 'x')
+            this.top.slicePlaneYRotation = angle;
+          else if(axis === 'y')
+            this.left.slicePlaneXRotation = angle;
+          break;
+      }
     },
     onScrolled({ slicePosition, index }) {
       // console.log("onscrolled", slicePosition, index);
@@ -310,7 +339,8 @@ export default {
 
         planes.push({
           position: camera.getFocalPoint(),
-          normal: this[viewportIndex].slicePlaneNormal
+          normal: camera.getDirectionOfProjection(),
+          // this[viewportIndex].slicePlaneNormal
         });
 
         // const distance = camera.getDistance();
@@ -323,11 +353,15 @@ export default {
         //   slicePosition[2] - dop[2] * distance
         // ];
       });
-      this.planeIntersecton = getPlaneIntersection(...planes);
+      const newPoint = getPlaneIntersection(...planes)
+      if(newPoint !== NaN) {
+        this.sliceIntersection = newPoint;
+      }
       // console.log("plane intersections:", position.x);
     },
     onCrosshairPointSelected({ index, worldPos }) {
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
+        console.log(index, viewportIndex)
         if (viewportIndex !== index) {
           // We are basically doing the same as getSlice but with the world coordinate
           // that we want to jump to instead of the camera focal point.
@@ -366,7 +400,7 @@ export default {
         svgWidgetManager.render();
       });
     },
-    //TODO: implement this
+
     updateLevels({ windowCenter, windowWidth, index }) {
       console.log(index + " levels", windowCenter, windowWidth);
 
@@ -374,6 +408,7 @@ export default {
       this[index].windowWidth = windowWidth;
 
       if (this.syncWindowLevels) {
+        // TODO: implement this
         // update all 3 windows
       }
     },
@@ -464,25 +499,30 @@ export default {
             .getRGBTransferFunction(0);
           rgbTransferFunction.setMappingRange(500, 3000);
 
+          Object.entries(this.viewDataArray).forEach(([key, view]) => {
+            view.windowCenter = 500;
+            view.windowWidth = 3000;
+          })
+
           // update slice min/max values for interface
           // Crate imageMapper for I,J,K planes
-          const dataRange = data
-            .getPointData()
-            .getScalars()
-            .getRange();
-          const extent = data.getExtent();
-          this.window = {
-            min: 0,
-            max: dataRange[1] * 2,
-            value: dataRange[1]
-          };
-          this.level = {
-            min: -dataRange[1],
-            max: dataRange[1],
-            value: (dataRange[0] + dataRange[1]) / 2
-          };
-          this.updateColorLevel();
-          this.updateColorWindow();
+          // const dataRange = data
+          //   .getPointData()
+          //   .getScalars()
+          //   .getRange();
+          // const extent = data.getExtent();
+          // this.window = {
+          //   min: 0,
+          //   max: dataRange[1] * 2,
+          //   value: dataRange[1]
+          // };
+          // this.level = {
+          //   min: -dataRange[1],
+          //   max: dataRange[1],
+          //   value: (dataRange[0] + dataRange[1]) / 2
+          // };
+          // this.updateColorLevel();
+          // this.updateColorWindow();
 
           // TODO: find the volume center and set that as the slice intersection point.
           // Refactor the MPR slice to set the focal point instead of defaulting to volume center
@@ -614,7 +654,7 @@ const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
     console.log("some issue calculating the plane intersection", err);
   }
   return NaN;
-}, 300);
+}, 0);
 
 const getVOI = volume => {
   // Note: This controls window/level
