@@ -641,11 +641,8 @@ const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
         plane3.position,
         plane3.normal
       );
-      // There is an issue with intersect returning false when the intersection is outside of the defined points, AND if the line and plane are parallel
-      // https://github.com/Kitware/vtk-js/issues/1189
       if (
-        intersectionLocation.intersect ||
-        intersectionLocation.t < Number.MAX_VALUE
+        intersectionLocation.intersection
       ) {
         return intersectionLocation.x;
       }
