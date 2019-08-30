@@ -342,8 +342,9 @@ export default {
         const wPos = vtkCoordinate.newInstance();
         wPos.setCoordinateSystemToWorld();
         wPos.setValue(point3d);
+        const canvasCoords = wPos.getComputedDisplayValue(this.renderer);
         // console.log("converted to:", wPos.getComputedDisplayValue(this.renderer))
-        return wPos.getComputedDisplayValue(this.renderer);
+        return canvasCoords
       }
       else{
         return [-10000,-10000]

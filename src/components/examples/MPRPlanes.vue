@@ -191,8 +191,6 @@ import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
 import vtkMath from "vtk.js/Sources/Common/Core/Math";
 import vtkPlane from "vtk.js/Sources/Common/DataModel/Plane";
 
-import throttle from "lodash/throttle";
-
 import { files } from "@/components/examples";
 
 export default {
@@ -625,7 +623,7 @@ function setInteractor(component, istyle) {
  * Planes are of type `{position:[x,y,z], normal:[x,y,z]}`
  * returns an [x,y,z] array, or NaN if they do not intersect.
  */
-const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
+const getPlaneIntersection = (plane1, plane2, plane3) => {
   try {
     let line = vtkPlane.intersectWithPlane(
       plane1.position,
@@ -651,7 +649,7 @@ const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
     console.log("some issue calculating the plane intersection", err);
   }
   return NaN;
-}, 0);
+};
 
 function getVolumeCenter(volumeMapper) {
   const bounds = volumeMapper.getBounds();

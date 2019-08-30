@@ -196,9 +196,18 @@ export default {
     },
 
     x() {
+      // Scale to window pixels if the screen is high density
+      if(window.devicePixelRatio){
+        return this.point[0] / window.devicePixelRatio;
+        //math.floor?
+        // vtkMath.multiplyScalar(canvasCoords, 1/window.devicePixelRatio)
+      }
       return this.point[0];
     },
     y() {
+       if(window.devicePixelRatio){
+        return this.height - this.point[1] / window.devicePixelRatio;
+      }
       // 0 is bottom left in vtk land vs canvas/svg
       return this.height - this.point[1];
     }
