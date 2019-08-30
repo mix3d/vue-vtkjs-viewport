@@ -154,11 +154,19 @@
           <view-2d-mpr
             :volumes="volumes"
             :sliceIntersection="sliceIntersection"
-            v-bind="view"
-            :onCreated="saveComponentReference(key)"
+            :views="viewDataArray"
+            :onCreated="saveComponentRefGenerator(key)"
             :index="key"
             @rotate="onRotate"
           />
+          <!-- <view-2d-mpr
+            :volumes="volumes"
+            :sliceIntersection="sliceIntersection"
+            v-bind="view"
+            :onCreated="saveComponentRefGenerator(key)"
+            :index="key"
+            @rotate="onRotate"
+          /> -->
         </div>
       </div>
     </div>
@@ -180,7 +188,7 @@ import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
-// import vtkMath from "vtk.js/Sources/Common/Core/Math";
+import vtkMath from "vtk.js/Sources/Common/Core/Math";
 import vtkPlane from "vtk.js/Sources/Common/DataModel/Plane";
 
 import throttle from "lodash/throttle";
@@ -197,16 +205,6 @@ export default {
       components: [],
       focusedWidgetId: null,
       activeTool: "LEVEL",
-      window: {
-        min: 0,
-        max: 0,
-        value: 3926
-      },
-      level: {
-        min: 0,
-        max: 0,
-        value: 1963
-      },
       loading: true,
       selectedFile: files[2],
       sliceIntersection: [0, 0, 0],
@@ -429,7 +427,7 @@ export default {
       // this.rerenderAllViewports();
     },
 
-    saveComponentReference(viewportIndex) {
+    saveComponentRefGenerator(viewportIndex) {
       return component => {
         this.components[viewportIndex] = component;
 
@@ -525,7 +523,9 @@ export default {
           // this.updateColorWindow();
 
           // TODO: find the volume center and set that as the slice intersection point.
-          // Refactor the MPR slice to set the focal point instead of defaulting to volume center
+          // TODO: Refactor the MPR slice to set the focal point instead of defaulting to volume center
+          this.sliceIntersection = getVolumeCenter(volumeMapper);
+          console.log(this.sliceIntersection)
 
           this.volumes = [volumeActor];
           this.loading = false;
@@ -655,6 +655,23 @@ const getPlaneIntersection = throttle((plane1, plane2, plane3) => {
   }
   return NaN;
 }, 0);
+
+function getVolumeCenter(volumeMapper) {
+  const bounds = volumeMapper.getBounds();
+  // diagonal will be used as "width" of camera scene
+  const diagonal = Math.sqrt(
+    vtkMath.distance2BetweenPoints(
+      [bounds[0], bounds[2], bounds[4]],
+      [bounds[1], bounds[3], bounds[5]]
+    )
+  );
+
+  return [
+    (bounds[0] + bounds[1]) / 2.0,
+    (bounds[2] + bounds[3]) / 2.0,
+    (bounds[4] + bounds[5]) / 2.0
+  ];
+}
 
 const getVOI = volume => {
   // Note: This controls window/level

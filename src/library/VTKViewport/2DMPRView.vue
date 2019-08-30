@@ -5,7 +5,8 @@
     <MPRInteractor
       :width="width"
       :height="height"
-      :xRotation="slicePlaneXRotation"
+      :xAxis="xAxis"
+      :yAxis="yAxis"
       :point="screenCoordSliceIntersection"
       @rotate="onRotate"
     />
@@ -40,9 +41,9 @@ export default {
   components: { ViewportOverlay, MPRInteractor },
   props: {
     volumes: { type: Array, required: true },
-    actors: Array,
+    views: { type: Object, required: true },
 
-    // Front, Side, Top, etc
+    // Front, Side, Top, etc, for which view data to use
     index: String,
 
     sliceIntersection: {
@@ -52,36 +53,36 @@ export default {
       }
     },
 
-    //Slice Plane
-    slicePlaneNormal: {
-      type: Array,
-      default() {
-        return [0, 0, 1];
-      }
-    },
-    slicePlaneXRotation: { type: Number, default: 0 },
-    slicePlaneYRotation: { type: Number, default: 0 },
-    // Camera view Up
-    sliceViewUp: {
-      type: Array,
-      default() {
-        return [0, 1, 0];
-      }
-    },
-    //0,90,180,270 rotation around the view axis
-    viewRotation: {
-      type: Number,
-      default: 0,
-      validator: v => [0, 90, 180, 270].includes(v)
-    },
+    // //Slice Plane
+    // slicePlaneNormal: {
+    //   type: Array,
+    //   default() {
+    //     return [0, 0, 1];
+    //   }
+    // },
+    // slicePlaneXRotation: { type: Number, default: 0 },
+    // slicePlaneYRotation: { type: Number, default: 0 },
+    // // Camera view Up
+    // sliceViewUp: {
+    //   type: Array,
+    //   default() {
+    //     return [0, 1, 0];
+    //   }
+    // },
+    // //0,90,180,270 rotation around the view axis
+    // viewRotation: {
+    //   type: Number,
+    //   default: 0,
+    //   validator: v => [0, 90, 180, 270].includes(v)
+    // },
 
-    sliceThickness: { type: Number, default: 0, validator: v => v > 0 },
+    // sliceThickness: { type: Number, default: 0, validator: v => v > 0 },
 
-    //leveling
-    windowWidth: { type: Number, default: 0 },
-    windowCenter: { type: Number, default: 0 },
+    // //leveling
+    // windowWidth: { type: Number, default: 0 },
+    // windowCenter: { type: Number, default: 0 },
 
-    blendMode: { type: String },
+    // blendMode: { type: String },
 
     dataDetails: Object,
     onCreated: Function,
@@ -97,6 +98,7 @@ export default {
     return {
       width: 0,
       height: 0,
+      renderer: null,
       subs: {
         interactor: createSub(),
         data: createSub()
@@ -265,6 +267,74 @@ export default {
     }
   },
   computed: {
+    // Cribbed from the index and views
+    slicePlaneNormal () {
+      return this.views[this.index].slicePlaneNormal
+    },
+    slicePlaneXRotation () {
+      return this.views[this.index].slicePlaneXRotation
+    },
+    slicePlaneYRotation () {
+      return this.views[this.index].slicePlaneYRotation
+    },
+    sliceViewUp () {
+      return this.views[this.index].sliceViewUp
+    },
+    viewRotation () {
+      return this.views[this.index].viewRotation
+    },
+    sliceThickness () {
+      return this.views[this.index].sliceThickness
+    },
+    windowWidth () {
+      return this.views[this.index].windowWidth
+    },
+    windowCenter () {
+      return this.views[this.index].windowCenter
+    },
+    blendMode () {
+      return this.views[this.index].blendMode
+    },
+
+    xAxis(){
+      switch(this.index){
+        case 'top':
+          return {
+            color: this.views.front.color,
+            rotation: this.views.front.slicePlaneYRotation
+          }
+        case 'left':
+          return {
+            color: this.views.top.color,
+            rotation: this.views.top.slicePlaneXRotation
+          }
+        case 'front':
+          return {
+            color: this.views.top.color,
+            rotation: this.views.top.slicePlaneYRotation
+          }
+      }
+    },
+    yAxis(){
+      switch(this.index){
+        case 'top':
+          return {
+            color: this.views.left.color,
+            rotation: this.views.left.slicePlaneYRotation
+          }
+        case 'left':
+          return {
+            color: this.views.front.color,
+            rotation: this.views.front.slicePlaneXRotation
+          }
+        case 'front':
+          return {
+            color: this.views.left.color,
+            rotation: this.views.left.slicePlaneXRotation
+          }
+      }
+    },
+
     screenCoordSliceIntersection() {
       const point3d = this.sliceIntersection;
       // console.log("computing screenCoord", point3d)
@@ -276,7 +346,7 @@ export default {
         return wPos.getComputedDisplayValue(this.renderer);
       }
       else{
-        return [0,0]
+        return [-10000,-10000]
       }
     },
     voi() {
@@ -298,7 +368,6 @@ export default {
 
     let widgets = [];
     let filters = [];
-    let actors = [];
     let volumes = [];
 
     this.renderer = this.genericRenderWindow.getRenderer();
@@ -311,10 +380,6 @@ export default {
     // istyle.setOnScroll(this.onStackScroll)
     const inter = this.renderWindow.getInteractor();
     inter.setInteractorStyle(istyle);
-
-    if (this.actors) {
-      actors = actors.concat(this.actors);
-    }
 
     if (this.volumes) {
       volumes = volumes.concat(this.volumes);
@@ -372,7 +437,6 @@ export default {
         container: this.$refs.container,
         widgets,
         filters,
-        actors,
         volumes,
         _component: this
       });
