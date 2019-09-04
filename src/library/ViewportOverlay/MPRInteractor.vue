@@ -10,21 +10,15 @@
   >
     <!-- Y line -->
     <g :transform="yTransform" :style="`color: ${yAxis.color}; fill: currentColor;`">
-      <line :x1="x" :y1="y - maxLength" :x2="x" :y2="y + maxLength" style="stroke: currentColor; stroke-width:2" />
-      <rect
-        :x="x-4"
-        :y="y + minLength / 6"
-        width="8"
-        height="8"
-        class="hoverSOON"
+      <line
+        :x1="x"
+        :y1="y - maxLength"
+        :x2="x"
+        :y2="y + maxLength"
+        style="stroke: currentColor; stroke-width:2"
       />
-      <rect
-        :x="x-4"
-        :y="y - minLength / 6"
-        width="8"
-        height="8"
-        class="hoverSOON"
-      />
+      <rect :x="x-4" :y="y + minLength / 6" width="8" height="8" class="hoverSOON" />
+      <rect :x="x-4" :y="y - minLength / 6" width="8" height="8" class="hoverSOON" />
       <circle
         :cx="x"
         :cy="y + minLength / 2.5"
@@ -43,21 +37,15 @@
 
     <!-- X line -->
     <g :transform="xTransform" :style="`color: ${xAxis.color}; fill: currentColor;`">
-      <line :x1="x - maxLength" :y1="y" :x2="x + maxLength" :y2="y" style="stroke: currentColor; stroke-width:2" />
-      <rect
-        :x="x + minLength / 6"
-        :y="y-4"
-        width="8"
-        height="8"
-        class="hoverSOON"
+      <line
+        :x1="x - maxLength"
+        :y1="y"
+        :x2="x + maxLength"
+        :y2="y"
+        style="stroke: currentColor; stroke-width:2"
       />
-      <rect
-        :x="x - minLength / 6"
-        :y="y-4"
-        width="8"
-        height="8"
-        class="hoverSOON"
-      />
+      <rect :x="x + minLength / 6" :y="y-4" width="8" height="8" class="hoverSOON" />
+      <rect :x="x - minLength / 6" :y="y-4" width="8" height="8" class="hoverSOON" />
 
       <circle
         :cx="x + minLength / 2.5"
@@ -88,26 +76,26 @@ export default {
     point: Array,
     lockAxis: {
       type: Boolean,
-      default: true,
+      default: true
     },
     shiftToUnlockAxis: {
       type: Boolean,
-      default: false,
+      default: false
     },
     xAxis: {
       type: Object,
       default: () => ({
-        color: 'red',
-        rotation: 0,
+        color: "red",
+        rotation: 0
       })
     },
     yAxis: {
       type: Object,
       default: () => ({
-        color: 'blue',
-        rotation: 0,
+        color: "blue",
+        rotation: 0
       })
-    },
+    }
   },
   data() {
     return {
@@ -130,7 +118,7 @@ export default {
 
             if (this.invertAngle) {
               //if positive, subtract 180, if negative, add 180, to get the same value as the right handle
-              angle += 180 * (angle < 0 ? 1 : -1)
+              angle += 180 * (angle < 0 ? 1 : -1);
             }
             // NOTE: Use this only if we fix the 90deg bug and it works 0 - 180
             // if (angle >= 90) angle -= 180;
@@ -142,8 +130,7 @@ export default {
 
             // emit the rotation
             this.$emit("rotate", "x", angle);
-            if(this.lockAxis && !(this.shiftToUnlockAxis && shiftKey))
-            {
+            if (this.lockAxis && !(this.shiftToUnlockAxis && shiftKey)) {
               this.$emit("rotate", "y", angle);
             }
             break;
@@ -155,11 +142,11 @@ export default {
 
             let angle = Math.floor(radians2degrees(Math.atan2(ny, nx)));
 
-            angle -= 90
+            angle -= 90;
 
             if (this.invertAngle) {
               //if positive, subtract 180, if negative, add 180, to get the same value as the right handle
-              angle += 180 * (angle < 0 ? 1 : -1)
+              angle += 180 * (angle < 0 ? 1 : -1);
             }
             // Use this only if we fix the 90deg bug and it works 0 - 180
             // if (angle >= 90) angle -= 180;
@@ -171,8 +158,7 @@ export default {
 
             // emit the rotation
             this.$emit("rotate", "y", angle);
-            if(this.lockAxis && !(this.shiftToUnlockAxis && shiftKey))
-            {
+            if (this.lockAxis && !(this.shiftToUnlockAxis && shiftKey)) {
               this.$emit("rotate", "x", angle);
             }
             break;
@@ -219,7 +205,7 @@ export default {
 
     x() {
       // Scale to window pixels if the screen is high density
-      if(window.devicePixelRatio){
+      if (window.devicePixelRatio) {
         return this.point[0] / window.devicePixelRatio;
         //math.floor?
         // vtkMath.multiplyScalar(canvasCoords, 1/window.devicePixelRatio)
@@ -227,7 +213,7 @@ export default {
       return this.point[0];
     },
     y() {
-       if(window.devicePixelRatio){
+      if (window.devicePixelRatio) {
         return this.height - this.point[1] / window.devicePixelRatio;
       }
       // 0 is bottom left in vtk land vs canvas/svg
@@ -253,7 +239,8 @@ svg .hover {
   stroke: transparent;
   stroke-width: 6;
 }
-svg .hover:hover, svg .hover.active {
+svg .hover:hover,
+svg .hover.active {
   /* stroke-width: 4; */
   stroke: currentColor;
 }

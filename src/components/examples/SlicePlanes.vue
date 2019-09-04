@@ -5,8 +5,7 @@
       This demo mirrors the example from
       <a
         href="https://kitware.github.io/vtk-js/examples/MultiSliceImageMapper.html"
-        >https://kitware.github.io/vtk-js/examples/MultiSliceImageMapper.html</a
-      >
+      >https://kitware.github.io/vtk-js/examples/MultiSliceImageMapper.html</a>
     </p>
     <select v-model="selectedFile">
       <option v-for="file in files" :key="file">{{ file }}</option>
@@ -18,89 +17,82 @@
     <div v-else>
       <div>
         <table>
-            <tr>
-              <td>Slice I</td>
-              <td>
-                <input
-                  class="sliceI"
-                  type="range"
-                  :min="sliceI.min"
-                  :max="sliceI.max"
-                  step="1"
-                  value="30"
-                  v-model="sliceI.value"
-                />
-                <span>{{sliceI.value}}</span>
-              </td>
-            </tr>
-            <tr>
-              <td>Slice J</td>
-              <td>
-                <input
-                  class="sliceJ"
-                  type="range"
-                  :min="sliceJ.min"
-                  :max="sliceJ.max"
-                  step="1"
-                  v-model="sliceJ.value"
-                />
-                <span>{{sliceJ.value}}</span>
-              </td>
-            </tr>
-            <tr>
-              <td>Slice K</td>
-              <td>
-                <input
-                  class="sliceK"
-                  type="range"
-                  :min="sliceJ.min"
-                  :max="sliceJ.max"
-                  step="1"
-                  v-model="sliceK.value"
-                />
-                <span>{{sliceK.value}}</span>
-              </td>
-            </tr>
-            <tr>
-              <td>Color level</td>
-              <td>
-                <input
-                  class="colorLevel"
-                  type="range"
-                  :min="level.min"
-                  :max="level.max"
-                  step="1"
-                  v-model="level.value"
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>ColorWindow</td>
-              <td>
-                <input
-                  class="colorWindow"
-                  type="range"
-                  :min="window.min"
-                  :max="window.max"
-                  step="1"
-                  v-model="window.value"
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Slice Rotate</td>
-              <td>
-                <input
-                  class="rotate"
-                  type="range"
-                  :min="-90"
-                  :max="90"
-                  step="1"
-                  v-model="rotate"
-                />
-                 <span>{{rotate}} degrees</span>
-              </td>
-            </tr>
+          <tr>
+            <td>Slice I</td>
+            <td>
+              <input
+                class="sliceI"
+                type="range"
+                :min="sliceI.min"
+                :max="sliceI.max"
+                step="1"
+                value="30"
+                v-model="sliceI.value"
+              />
+              <span>{{sliceI.value}}</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Slice J</td>
+            <td>
+              <input
+                class="sliceJ"
+                type="range"
+                :min="sliceJ.min"
+                :max="sliceJ.max"
+                step="1"
+                v-model="sliceJ.value"
+              />
+              <span>{{sliceJ.value}}</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Slice K</td>
+            <td>
+              <input
+                class="sliceK"
+                type="range"
+                :min="sliceJ.min"
+                :max="sliceJ.max"
+                step="1"
+                v-model="sliceK.value"
+              />
+              <span>{{sliceK.value}}</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Color level</td>
+            <td>
+              <input
+                class="colorLevel"
+                type="range"
+                :min="level.min"
+                :max="level.max"
+                step="1"
+                v-model="level.value"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>ColorWindow</td>
+            <td>
+              <input
+                class="colorWindow"
+                type="range"
+                :min="window.min"
+                :max="window.max"
+                step="1"
+                v-model="window.value"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Slice Rotate</td>
+            <td>
+              <input class="rotate" type="range" :min="-90" :max="90" step="1" v-model="rotate" />
+              <span>{{rotate}} degrees</span>
+            </td>
+          </tr>
         </table>
       </div>
       <!-- <div class="row">
@@ -116,19 +108,13 @@
             :onCreated="this.saveComponentReference(1)"
           />
         </div>
-      </div> -->
+      </div>-->
       <div class="row">
         <div class="col">
-          <view-2d
-            :volumes="volumes"
-            :onCreated="this.saveComponentReference(2)"
-          />
+          <view-2d :volumes="volumes" :onCreated="this.saveComponentReference(2)" />
         </div>
         <div class="col">
-          <view-generic
-            :onCreated="this.saveComponentReference(3)"
-            :dataDetails="dataDetails"
-          />
+          <view-generic :onCreated="this.saveComponentReference(3)" :dataDetails="dataDetails" />
         </div>
       </div>
     </div>
@@ -186,7 +172,7 @@ export default {
       },
       loading: true,
       selectedFile: files[0],
-      rotate: 0,
+      rotate: 0
     };
   },
   computed: {
@@ -238,33 +224,31 @@ export default {
       },
       deep: true
     },
-    window:{
-      handler(newWindow){
-        this.updateColorWindow(newWindow.value)
+    window: {
+      handler(newWindow) {
+        this.updateColorWindow(newWindow.value);
       },
-      deep:true
+      deep: true
     },
     level: {
-      handler(newLevel){
-        this.updateColorLevel(newLevel.value)
+      handler(newLevel) {
+        this.updateColorLevel(newLevel.value);
       },
-      deep:true
+      deep: true
     },
-    rotate(newRot){
-      let component = this.components[2]
+    rotate(newRot) {
+      let component = this.components[2];
 
       const renderWindow = component.genericRenderWindow.getRenderWindow();
-      const istyle = renderWindow
-                      .getInteractor()
-                      .getInteractorStyle();
+      const istyle = renderWindow.getInteractor().getInteractorStyle();
       const transform = vtkMatrixBuilder
-          .buildFromDegree()
-          .rotateZ(Number(newRot));
-      let normal = [1,0,0];
+        .buildFromDegree()
+        .rotateZ(Number(newRot));
+      let normal = [1, 0, 0];
       transform.apply(normal);
-      console.log("newnormal", normal)
+      console.log("newnormal", normal);
       istyle.setSliceNormal(normal, [0, 0, -1]);
-      renderWindow.render()
+      renderWindow.render();
     }
   },
   methods: {
@@ -414,7 +398,7 @@ export default {
 </script>
 
 <style scoped>
-.col{
+.col {
   max-height: 400px;
 }
 </style>

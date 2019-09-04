@@ -1,7 +1,7 @@
 <template>
   <div v-if="volumes && volumes.length" class="viewer2d">
     <div ref="container" class="container2d" />
-    <ViewportOverlay v-bind="dataDetails" :voi="voi" :color="viewColor"/>
+    <ViewportOverlay v-bind="dataDetails" :voi="voi" :color="viewColor" />
     <MPRInteractor
       :width="width"
       :height="height"
@@ -19,7 +19,6 @@
  */
 
 import vtkGenericRenderWindow from "vtk.js/Sources/Rendering/Misc/GenericRenderWindow";
-import vtkRenderer from "vtk.js/Sources/Rendering/Core/Renderer";
 
 import { quat, vec3, mat4 } from "gl-matrix";
 
@@ -107,16 +106,21 @@ export default {
   },
 
   methods: {
-    onRotate(axis, angle){
-      this.$emit('rotate', this.index, axis, angle)
+    onRotate(axis, angle) {
+      this.$emit("rotate", this.index, axis, angle);
     },
     onResize() {
       // TODO: debounce
       this.genericRenderWindow.resize();
 
-      const [width, height] = [this.$refs.container.offsetWidth, this.$refs.container.offsetHeight];
+      const [width, height] = [
+        this.$refs.container.offsetWidth,
+        this.$refs.container.offsetHeight
+      ];
       this.width = width;
       this.height = height;
+
+      // TODO: recalculate intersection.
     },
     updateVolumesForRendering(volumes) {
       if (volumes && volumes.length) {
@@ -299,42 +303,42 @@ export default {
       return this.views[this.index].color;
     },
 
-    xAxis(){
-      switch(this.index){
-        case 'top':
+    xAxis() {
+      switch (this.index) {
+        case "top":
           return {
             color: this.views.front.color,
             rotation: this.views.front.slicePlaneYRotation
-          }
-        case 'left':
+          };
+        case "left":
           return {
             color: this.views.top.color,
             rotation: this.views.top.slicePlaneXRotation
-          }
-        case 'front':
+          };
+        case "front":
           return {
             color: this.views.top.color,
             rotation: this.views.top.slicePlaneYRotation
-          }
+          };
       }
     },
-    yAxis(){
-      switch(this.index){
-        case 'top':
+    yAxis() {
+      switch (this.index) {
+        case "top":
           return {
             color: this.views.left.color,
             rotation: this.views.left.slicePlaneYRotation
-          }
-        case 'left':
+          };
+        case "left":
           return {
             color: this.views.front.color,
             rotation: this.views.front.slicePlaneXRotation
-          }
-        case 'front':
+          };
+        case "front":
           return {
             color: this.views.left.color,
             rotation: this.views.left.slicePlaneXRotation
-          }
+          };
       }
     },
 
@@ -347,10 +351,9 @@ export default {
         wPos.setValue(point3d);
         const canvasCoords = wPos.getComputedDisplayValue(this.renderer);
         // console.log("converted to:", wPos.getComputedDisplayValue(this.renderer))
-        return canvasCoords
-      }
-      else{
-        return [-10000,-10000]
+        return canvasCoords;
+      } else {
+        return [-10000, -10000];
       }
     },
     voi() {
@@ -358,7 +361,10 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener("resize", this.onResize);
+    window.addEventListener("resize", () => {
+      console.log("view resize event");
+      this.onResize();
+    });
 
     // cache the view vectors so we can apply the rotations without modifying the original value
     this.cachedSlicePlane = [...this.slicePlaneNormal];
