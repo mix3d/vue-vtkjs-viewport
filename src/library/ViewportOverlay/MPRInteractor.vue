@@ -10,7 +10,7 @@
   >
     <!-- Y line -->
     <g :transform="yTransform" :style="`color: ${yAxis.color}; fill: currentColor;`">
-      <line :x1="x" :y1="y - length" :x2="x" :y2="y + length" style="stroke: currentColor; stroke-width:2" />
+      <line :x1="x" :y1="y - maxLength" :x2="x" :y2="y + maxLength" style="stroke: currentColor; stroke-width:2" />
       <rect
         :x="x-4"
         :y="y + width / 6"
@@ -43,7 +43,7 @@
 
     <!-- X line -->
     <g :transform="xTransform" :style="`color: ${xAxis.color}; fill: currentColor;`">
-      <line :x1="x - length" :y1="y" :x2="x + length" :y2="y" style="stroke: currentColor; stroke-width:2" />
+      <line :x1="x - maxLength" :y1="y" :x2="x + maxLength" :y2="y" style="stroke: currentColor; stroke-width:2" />
       <rect
         :x="x + width / 6"
         :y="y-4"
@@ -86,6 +86,14 @@ export default {
     width: Number,
     height: Number,
     point: Array,
+    lockAxis: {
+      type: Boolean,
+      default: true,
+    },
+    shiftToUnlockAxis: {
+      type: Boolean,
+      default: true,
+    },
     xAxis: {
       type: Object,
       default: () => ({
@@ -111,6 +119,7 @@ export default {
   methods: {
     onMove(event) {
       if (this.mousedown) {
+        const shiftKey = event.shiftKey;
         switch (this.action) {
           case "rotateX": {
             //calculate the rotation angle from mouse to center x, y
@@ -123,7 +132,7 @@ export default {
               //if positive, subtract 180, if negative, add 180, to get the same value as the right handle
               angle += 180 * (angle < 0 ? 1 : -1)
             }
-            // Use this only if we fix the 90deg bug and it works 0 - 180
+            // NOTE: Use this only if we fix the 90deg bug and it works 0 - 180
             // if (angle >= 90) angle -= 180;
             // else if (angle <= -90) angle += 180;
 
@@ -133,6 +142,10 @@ export default {
 
             // emit the rotation
             this.$emit("rotate", "x", angle);
+            if(this.lockAxis)
+            {
+              this.$emit("rotate", "y", angle);
+            }
             break;
           }
           case "rotateY": {
@@ -158,6 +171,10 @@ export default {
 
             // emit the rotation
             this.$emit("rotate", "y", angle);
+            if(event.shiftKey || (this.shiftToUnlockAxis && shiftKey))
+            {
+              this.$emit("rotate", "x", angle);
+            }
             break;
           }
         }
@@ -187,10 +204,15 @@ export default {
     yStyle() {
       return `color: ${this.yAxis.color}; stroke: currentColor; stroke-width:2`;
     },
-    length() {
-      // Guarentees line length is longer than diagonal (sqrt 2 factor ~ 1.41)
+    maxLength() {
+      // Guarentees axis lines are drawn to the edge
       return this.width > this.height ? this.width : this.height;
     },
+    minLength() {
+      //used to make sure everything is drawn inside the canvas
+      return this.width < this.height ? this.width : this.height;
+    },
+
     viewBox() {
       return `0 0 ${this.width} ${this.height}`;
     },

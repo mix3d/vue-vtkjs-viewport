@@ -1,5 +1,6 @@
 <template>
   <div class="ViewportOverlay">
+    <div v-if="color" class="viewColor" :style="colorStyle"></div>
     <div class="top-left overlay-element">
       <div>{{ formatPN(patientName) }}</div>
       <div>{{ patientId }}</div>
@@ -46,7 +47,8 @@ export default {
     patientName: String,
     patientId: String,
     seriesNumber: String,
-    seriesDescription: String
+    seriesDescription: String,
+    color: String,
   },
   methods: {
     formatPN,
@@ -56,6 +58,9 @@ export default {
     isValidNumber
   },
   computed: {
+    colorStyle(){
+      return this.color && `background: ${this.color}` || '';
+    },
     wwwc() {
       return `W: ${this.voi.windowWidth.toFixed(
         0
@@ -72,6 +77,14 @@ export default {
 
 .ViewportOverlay {
   color: #9ccef9;
+
+  .viewColor{
+    position: absolute;
+    top:0;
+    right:0;
+    width: 16px;
+    height: 16px;
+  }
 
   .overlay-element {
     position: absolute;

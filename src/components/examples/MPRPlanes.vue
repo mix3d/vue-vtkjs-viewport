@@ -303,7 +303,7 @@ export default {
       setInteractor(component, istyle);
     },
     onRotate(index, axis, angle) {
-      console.log(index, axis, angle)
+      // Match the source axis to the associated plane
       switch(index){
         case 'top':
           if(axis === 'x')
@@ -326,7 +326,6 @@ export default {
       }
     },
     onScrolled({ slicePosition, index }) {
-      // console.log("onscrolled", slicePosition, index);
       let planes = [];
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
         const camera = component.genericRenderWindow

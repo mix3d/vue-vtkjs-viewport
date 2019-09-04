@@ -1,7 +1,7 @@
 <template>
   <div v-if="volumes && volumes.length" class="viewer2d">
     <div ref="container" class="container2d" />
-    <ViewportOverlay v-bind="dataDetails" :voi="voi" />
+    <ViewportOverlay v-bind="dataDetails" :voi="voi" :color="viewColor"/>
     <MPRInteractor
       :width="width"
       :height="height"
@@ -268,32 +268,35 @@ export default {
   },
   computed: {
     // Cribbed from the index and views
-    slicePlaneNormal () {
-      return this.views[this.index].slicePlaneNormal
+    slicePlaneNormal() {
+      return this.views[this.index].slicePlaneNormal;
     },
-    slicePlaneXRotation () {
-      return this.views[this.index].slicePlaneXRotation
+    slicePlaneXRotation() {
+      return this.views[this.index].slicePlaneXRotation;
     },
-    slicePlaneYRotation () {
-      return this.views[this.index].slicePlaneYRotation
+    slicePlaneYRotation() {
+      return this.views[this.index].slicePlaneYRotation;
     },
-    sliceViewUp () {
-      return this.views[this.index].sliceViewUp
+    sliceViewUp() {
+      return this.views[this.index].sliceViewUp;
     },
-    viewRotation () {
-      return this.views[this.index].viewRotation
+    viewRotation() {
+      return this.views[this.index].viewRotation;
     },
-    sliceThickness () {
-      return this.views[this.index].sliceThickness
+    sliceThickness() {
+      return this.views[this.index].sliceThickness;
     },
-    windowWidth () {
-      return this.views[this.index].windowWidth
+    windowWidth() {
+      return this.views[this.index].windowWidth;
     },
-    windowCenter () {
-      return this.views[this.index].windowCenter
+    windowCenter() {
+      return this.views[this.index].windowCenter;
     },
-    blendMode () {
-      return this.views[this.index].blendMode
+    blendMode() {
+      return this.views[this.index].blendMode;
+    },
+    viewColor() {
+      return this.views[this.index].color;
     },
 
     xAxis(){
