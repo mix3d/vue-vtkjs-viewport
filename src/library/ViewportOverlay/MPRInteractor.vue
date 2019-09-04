@@ -13,28 +13,28 @@
       <line :x1="x" :y1="y - maxLength" :x2="x" :y2="y + maxLength" style="stroke: currentColor; stroke-width:2" />
       <rect
         :x="x-4"
-        :y="y + width / 6"
+        :y="y + minLength / 6"
         width="8"
         height="8"
         class="hoverSOON"
       />
       <rect
         :x="x-4"
-        :y="y - width / 6"
+        :y="y - minLength / 6"
         width="8"
         height="8"
         class="hoverSOON"
       />
       <circle
         :cx="x"
-        :cy="y + width / 2.5"
+        :cy="y + minLength / 2.5"
         r="6"
         @mousedown="() => startRotateY()"
         :class="{'hover':true, 'active': mousedown && action === 'rotateY' && !invertAngle}"
       />
       <circle
         :cx="x"
-        :cy="y - width / 2.5"
+        :cy="y - minLength / 2.5"
         r="6"
         @mousedown="() => startRotateY(true)"
         :class="{'hover':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
@@ -45,14 +45,14 @@
     <g :transform="xTransform" :style="`color: ${xAxis.color}; fill: currentColor;`">
       <line :x1="x - maxLength" :y1="y" :x2="x + maxLength" :y2="y" style="stroke: currentColor; stroke-width:2" />
       <rect
-        :x="x + width / 6"
+        :x="x + minLength / 6"
         :y="y-4"
         width="8"
         height="8"
         class="hoverSOON"
       />
       <rect
-        :x="x - width / 6"
+        :x="x - minLength / 6"
         :y="y-4"
         width="8"
         height="8"
@@ -60,14 +60,14 @@
       />
 
       <circle
-        :cx="x + width / 2.5"
+        :cx="x + minLength / 2.5"
         :cy="y"
         r="6"
         @mousedown="() => startRotateX()"
         :class="{'hover':true, 'active': mousedown && action === 'rotateX' && !invertAngle}"
       />
       <circle
-        :cx="x - width / 2.5"
+        :cx="x - minLength / 2.5"
         :cy="y"
         r="6"
         @mousedown="() => startRotateX(true)"
@@ -92,7 +92,7 @@ export default {
     },
     shiftToUnlockAxis: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     xAxis: {
       type: Object,
@@ -142,7 +142,7 @@ export default {
 
             // emit the rotation
             this.$emit("rotate", "x", angle);
-            if(this.lockAxis)
+            if(this.lockAxis && !(this.shiftToUnlockAxis && shiftKey))
             {
               this.$emit("rotate", "y", angle);
             }
@@ -171,7 +171,7 @@ export default {
 
             // emit the rotation
             this.$emit("rotate", "y", angle);
-            if(event.shiftKey || (this.shiftToUnlockAxis && shiftKey))
+            if(this.lockAxis && !(this.shiftToUnlockAxis && shiftKey))
             {
               this.$emit("rotate", "x", angle);
             }
