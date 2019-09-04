@@ -83,7 +83,16 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
       superHandleMouseMove(callData);
     }
   };
-
+  publicAPI.setWindowLevel = (windowWidth, windowCenter) => {
+    const lower = windowCenter - windowWidth / 2.0;
+    const upper = windowCenter + windowWidth / 2.0;
+    if (model.volumeMapper) {
+      model.volumeMapper
+        .getProperty()
+        .getRGBTransferFunction(0)
+        .setMappingRange(lower, upper);
+    }
+  };
   publicAPI.windowLevel = (renderer, pos) => {
     const rwi = model.interactor;
     if (model.volumeMapper) {

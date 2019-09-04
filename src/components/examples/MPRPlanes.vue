@@ -19,7 +19,8 @@
           <img src="https://img.icons8.com/material/344/define-location.png" />
           Select
         </button>
-        <p>TEST: {{sliceIntersection}}</p>
+        <p><input type="checkbox" id="checkbox" v-model="syncWindowLevels"> <label for="checkbox">Sync Window Leveling</label> </p>
+        <p>Intersect point: {{sliceIntersection}}</p>
       </div>
       <div class="row">
         <div class="col" v-for="(view, key) in viewDataArray" :key="key">
@@ -113,14 +114,6 @@
             :index="key"
             @rotate="onRotate"
           />
-          <!-- <view-2d-mpr
-            :volumes="volumes"
-            :sliceIntersection="sliceIntersection"
-            v-bind="view"
-            :onCreated="saveComponentRefGenerator(key)"
-            :index="key"
-            @rotate="onRotate"
-          />-->
         </div>
       </div>
     </div>
@@ -160,6 +153,8 @@ export default {
       loading: true,
       selectedFile: files[2],
       sliceIntersection: [0, 0, 0],
+      // TODO: refactor into prop.
+      syncWindowLevels: false,
       top: {
         color: "#F8B42C",
         slicePlaneNormal: [0, 0, 1],
@@ -343,8 +338,12 @@ export default {
       this[index].windowWidth = windowWidth;
 
       if (this.syncWindowLevels) {
-        // TODO: implement this
-        // update all 3 windows
+        Object.entries(this.components).filter(([key]) => key !== index).forEach(([key, component]) =>{
+          this[key].windowCenter = windowCenter;
+          this[key].windowWidth = windowWidth;
+          component.genericRenderWindow.getInteractor().getInteractorStyle().setWindowLevel(windowWidth, windowCenter);
+          component.genericRenderWindow.getRenderWindow().render();
+        })
       }
     },
 
@@ -418,7 +417,7 @@ export default {
             .getRGBTransferFunction(0);
           rgbTransferFunction.setMappingRange(500, 3000);
 
-          Object.valuesd(this.viewDataArray).forEach(view => {
+          Object.values(this.viewDataArray).forEach(view => {
             view.windowCenter = 500;
             view.windowWidth = 3000;
           });
