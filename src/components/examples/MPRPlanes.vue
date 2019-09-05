@@ -271,7 +271,8 @@ export default {
       }
     },
     //{ slicePosition, index }
-    onScrolled() {
+    onScrolled({ slicePosition, index } = {}) {
+      console.log("onscroll")
       let planes = [];
       Object.values(this.components).forEach(component => {
         const camera = component.genericRenderWindow
@@ -285,7 +286,7 @@ export default {
         });
       });
       const newPoint = getPlaneIntersection(...planes);
-      if (!isNaN(newPoint)) {
+      if (!Number.isNaN(newPoint)) {
         this.sliceIntersection = newPoint;
       }
     },
@@ -297,7 +298,7 @@ export default {
           // that we want to jump to instead of the camera focal point.
           // I would rather do the camera adjustment directly but I keep
           // doing it wrong and so this is good enough for now.
-          // swerik
+          // ~ swerik
           const renderWindow = component.genericRenderWindow.getRenderWindow();
 
           const istyle = renderWindow.getInteractor().getInteractorStyle();
@@ -332,13 +333,11 @@ export default {
     },
 
     updateLevels({ windowCenter, windowWidth, index }) {
-      console.log(index + " levels", windowCenter, windowWidth);
-
       this[index].windowCenter = windowCenter;
       this[index].windowWidth = windowWidth;
 
       if (this.syncWindowLevels) {
-        Object.entries(this.components).filter(([key]) => key !== index).forEach(([key, component]) =>{
+        Object.entries(this.components).filter(([key]) => key !== index).forEach(([key, component]) => {
           this[key].windowCenter = windowCenter;
           this[key].windowWidth = windowWidth;
           component.genericRenderWindow.getInteractor().getInteractorStyle().setWindowLevel(windowWidth, windowCenter);
