@@ -8,65 +8,69 @@
     @mouseup="endMove"
     :class="{'captureMouse':mousedown}"
   >
-    <!-- Y line -->
-    <g :transform="yTransform" :style="`color: ${yAxis.color}; fill: currentColor;`">
-      <line
-        :x1="x"
-        :y1="y - maxLength"
-        :x2="x"
-        :y2="y + maxLength"
-        style="stroke: currentColor; stroke-width:2"
-      />
-      <rect :x="x-4" :y="y + minLength / 6" width="8" height="8" class="hoverSOON" />
-      <rect :x="x-4" :y="y - minLength / 6" width="8" height="8" class="hoverSOON" />
-      <circle
-        :cx="x"
-        :cy="y + minLength / 2.5"
-        r="6"
-        @mousedown="() => startRotateY()"
-        :class="{'hover':true, 'active': mousedown && action === 'rotateY' && !invertAngle}"
-      />
-      <circle
-        :cx="x"
-        :cy="y - minLength / 2.5"
-        r="6"
-        @mousedown="() => startRotateY(true)"
-        :class="{'hover':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
-      />
-    </g>
+    <g :transform="viewTransform">
+      <!-- Y line -->
+      <g :transform="yTransform" :style="`color: ${yAxis.color}; fill: currentColor;`">
+        <line
+          :x1="x"
+          :y1="y - maxLength"
+          :x2="x"
+          :y2="y + maxLength"
+          style="stroke: currentColor; stroke-width:2"
+        />
+        <rect :x="x-4" :y="y + squarePos" width="8" height="8" class="hoverSOON" />
+        <rect :x="x-4" :y="y - squarePos - 8" width="8" height="8" class="hoverSOON" />
+        <circle
+          :cx="x"
+          :cy="y + circlePos"
+          r="6"
+          @mousedown="(event) => startRotateY(event)"
+          :class="{'hover':true, 'active': mousedown && action === 'rotateY' && !invertAngle}"
+        />
+        <circle
+          :cx="x"
+          :cy="y - circlePos"
+          r="6"
+          @mousedown="(event) => startRotateY(event, true)"
+          :class="{'hover':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
+        />
+      </g>
 
-    <!-- X line -->
-    <g :transform="xTransform" :style="`color: ${xAxis.color}; fill: currentColor;`">
-      <line
-        :x1="x - maxLength"
-        :y1="y"
-        :x2="x + maxLength"
-        :y2="y"
-        style="stroke: currentColor; stroke-width:2"
-      />
-      <rect :x="x + minLength / 6" :y="y-4" width="8" height="8" class="hoverSOON" />
-      <rect :x="x - minLength / 6" :y="y-4" width="8" height="8" class="hoverSOON" />
+      <!-- X line -->
+      <g :transform="xTransform" :style="`color: ${xAxis.color}; fill: currentColor;`">
+        <line
+          :x1="x - maxLength"
+          :y1="y"
+          :x2="x + maxLength"
+          :y2="y"
+          style="stroke: currentColor; stroke-width:2"
+        />
+        <rect :x="x + squarePos" :y="y-4" width="8" height="8" class="hoverSOON" />
+        <rect :x="x - squarePos - 8" :y="y-4" width="8" height="8" class="hoverSOON" />
 
-      <circle
-        :cx="x + minLength / 2.5"
-        :cy="y"
-        r="6"
-        @mousedown="() => startRotateX()"
-        :class="{'hover':true, 'active': mousedown && action === 'rotateX' && !invertAngle}"
-      />
-      <circle
-        :cx="x - minLength / 2.5"
-        :cy="y"
-        r="6"
-        @mousedown="() => startRotateX(true)"
-        :class="{'hover':true, 'active': mousedown && action === 'rotateX' && invertAngle}"
-      />
+        <circle
+          :cx="x + circlePos"
+          :cy="y"
+          r="6"
+          @mousedown="(event) => startRotateX(event)"
+          :class="{'hover':true, 'active': mousedown && action === 'rotateX' && !invertAngle}"
+        />
+        <circle
+          :cx="x - circlePos"
+          :cy="y"
+          r="6"
+          @mousedown="(event) => startRotateX(event, true)"
+          :class="{'hover':true, 'active': mousedown && action === 'rotateX' && invertAngle}"
+        />
+      </g>
     </g>
   </svg>
 </template>
 
 <script>
 import { radians2degrees } from "../lib/math/angles.js";
+import { vec2, glMatrix } from "gl-matrix";
+
 export default {
   name: "",
 
@@ -81,6 +85,10 @@ export default {
     shiftToUnlockAxis: {
       type: Boolean,
       default: false
+    },
+    viewRotation: {
+      type: Number,
+      default: 0,
     },
     xAxis: {
       type: Object,
@@ -110,9 +118,15 @@ export default {
         const shiftKey = event.shiftKey;
         switch (this.action) {
           case "rotateX": {
-            //calculate the rotation angle from mouse to center x, y
-            const nx = event.offsetX - this.x;
-            const ny = event.offsetY - this.y;
+            // calculate the rotation angle from mouse to center [x, y]
+
+            const newPos = [event.offsetX, event.offsetY];
+            // account for the view's rotation by rotating the mouse position around the center
+            if(this.viewRotation)
+              vec2.rotate(newPos, newPos, [this.x, this.y], -glMatrix.toRadian(this.viewRotation))
+
+            const nx = newPos[0] - this.x;
+            const ny = newPos[1] - this.y;
 
             let angle = Math.floor(radians2degrees(Math.atan2(ny, nx)));
 
@@ -120,6 +134,7 @@ export default {
               //if positive, subtract 180, if negative, add 180, to get the same value as the right handle
               angle += 180 * (angle < 0 ? 1 : -1);
             }
+
             // NOTE: Use this only if we fix the 90deg bug and it works 0 - 180
             // if (angle >= 90) angle -= 180;
             // else if (angle <= -90) angle += 180;
@@ -136,18 +151,25 @@ export default {
             break;
           }
           case "rotateY": {
-            //calculate the rotation angle from mouse to center x, y
-            const nx = event.offsetX - this.x;
-            const ny = event.offsetY - this.y;
+            // calculate the rotation angle from mouse to center [x, y]
+
+            const newPos = [event.offsetX, event.offsetY];
+            // account for the view's rotation by rotating the mouse position around the center
+            if(this.viewRotation)
+              vec2.rotate(newPos, newPos, [this.x, this.y], -glMatrix.toRadian(this.viewRotation))
+
+            const nx = newPos[0] - this.x;
+            const ny = newPos[1] - this.y;
 
             let angle = Math.floor(radians2degrees(Math.atan2(ny, nx)));
-
+            //account for Y axis difference
             angle -= 90;
 
             if (this.invertAngle) {
               //if positive, subtract 180, if negative, add 180, to get the same value as the right handle
               angle += 180 * (angle < 0 ? 1 : -1);
             }
+
             // Use this only if we fix the 90deg bug and it works 0 - 180
             // if (angle >= 90) angle -= 180;
             // else if (angle <= -90) angle += 180;
@@ -166,12 +188,12 @@ export default {
         }
       }
     },
-    startRotateX(invertAngle = false) {
+    startRotateX(event, invertAngle = false) {
       this.action = "rotateX";
       this.mousedown = true;
       this.invertAngle = invertAngle;
     },
-    startRotateY(invertAngle = false) {
+    startRotateY(event, invertAngle = false) {
       this.action = "rotateY";
       this.mousedown = true;
       this.invertAngle = invertAngle;
@@ -187,9 +209,13 @@ export default {
     yTransform() {
       return `rotate(${this.yAxis.rotation}, ${this.x}, ${this.y})`;
     },
+    viewTransform() {
+      return `rotate(${this.viewRotation}, ${this.x}, ${this.y})`;
+    },
     yStyle() {
       return `color: ${this.yAxis.color}; stroke: currentColor; stroke-width:2`;
     },
+
     maxLength() {
       // Guarentees axis lines are drawn to the edge
       return this.width > this.height ? this.width : this.height;
@@ -197,6 +223,12 @@ export default {
     minLength() {
       //used to make sure everything is drawn inside the canvas
       return this.width < this.height ? this.width : this.height;
+    },
+    circlePos() {
+      return Math.floor(this.minLength / 2.5);
+    },
+    squarePos() {
+      return Math.floor(this.minLength / 6);
     },
 
     viewBox() {
@@ -236,12 +268,12 @@ svg.captureMouse {
 svg .hover {
   pointer-events: all;
   cursor: "pointer";
+  /* Increase the mouse hover area */
   stroke: transparent;
   stroke-width: 6;
 }
 svg .hover:hover,
 svg .hover.active {
-  /* stroke-width: 4; */
   stroke: currentColor;
 }
 </style>

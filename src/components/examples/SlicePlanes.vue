@@ -294,7 +294,7 @@ export default {
           case 1:
             // sagittal
             break;
-          case 2:
+          case 2: {
             // Coronal
             renderWindow
               .getInteractor()
@@ -305,6 +305,7 @@ export default {
             istyle.setVolumeMapper(component.volumes[0]);
             istyle.setSliceNormal([1, 0, 0], [0, 0, -1]);
             break;
+          }
           case 3:
             // 3d view
             Object.values(this.imageActors).forEach(actor => {

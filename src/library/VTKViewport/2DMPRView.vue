@@ -7,6 +7,7 @@
       :height="height"
       :xAxis="xAxis"
       :yAxis="yAxis"
+      :viewRotation="viewRotation"
       :point="screenCoordSliceIntersection"
       @rotate="onRotate"
     />
