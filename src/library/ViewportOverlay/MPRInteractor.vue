@@ -84,7 +84,7 @@ export default {
     },
     shiftToUnlockAxis: {
       type: Boolean,
-      default: false
+      default: true
     },
     viewRotation: {
       type: Number,
@@ -109,6 +109,7 @@ export default {
     return {
       mousedown: false,
       invertAngle: false,
+      axisOffset: 0,
       action: ""
     };
   },
@@ -146,7 +147,7 @@ export default {
             // emit the rotation
             this.$emit("rotate", "x", angle);
             if (this.lockAxis && !(this.shiftToUnlockAxis && shiftKey)) {
-              this.$emit("rotate", "y", angle);
+              this.$emit("rotate", "y", angle - this.axisOffset);
             }
             break;
           }
@@ -181,7 +182,7 @@ export default {
             // emit the rotation
             this.$emit("rotate", "y", angle);
             if (this.lockAxis && !(this.shiftToUnlockAxis && shiftKey)) {
-              this.$emit("rotate", "x", angle);
+              this.$emit("rotate", "x", angle - this.axisOffset);
             }
             break;
           }
@@ -192,11 +193,13 @@ export default {
       this.action = "rotateX";
       this.mousedown = true;
       this.invertAngle = invertAngle;
+      this.axisOffset = this.xAxis.rotation - this.yAxis.rotation;
     },
     startRotateY(event, invertAngle = false) {
       this.action = "rotateY";
       this.mousedown = true;
       this.invertAngle = invertAngle;
+      this.axisOffset = this.yAxis.rotation - this.xAxis.rotation;
     },
     endMove(event) {
       this.mousedown = false;
