@@ -272,7 +272,6 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   // Slice normal is just camera DOP
   publicAPI.getSliceNormal = () => {
     if (model.volumeMapper && model.interactor) {
-      // console.log("getslicenormal", model, model.interactor)
       const renderer = model.interactor.getCurrentRenderer();
       const camera = renderer.getActiveCamera();
       return camera.getDirectionOfProjection();

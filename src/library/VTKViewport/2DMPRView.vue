@@ -223,7 +223,6 @@ export default {
   },
   watch: {
     volumes(newVolumes, oldVolumes) {
-      console.log("volumes changed", newVolumes, oldVolumes);
       this.updateVolumesForRendering(newVolumes);
     },
 
@@ -362,10 +361,7 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener("resize", () => {
-      console.log("view resize event");
-      this.onResize();
-    });
+    window.addEventListener("resize", this.onResize);
 
     // cache the view vectors so we can apply the rotations without modifying the original value
     this.cachedSlicePlane = [...this.slicePlaneNormal];
@@ -397,19 +393,6 @@ export default {
     }
 
     /*
-    TODO: Enable normal orthogonal slicing / window level as default instead of
-    rotation tool
-
-    const istyle = CustomSliceInteractorStyle.newInstance();
-    this.istyle = istyle
-    this.renderWindow.getInteractor().setInteractorStyle(istyle)
-    istyle.setCurrentVolumeNumber(0); // background volume
-    istyle.setSlicingMode(1, true); // force set slice mode
-
-    interactor.setInteractorStyle(istyle);
-    */
-
-    /*
     // TODO: Use for maintaining clipping range for MIP
     const interactor = this.renderWindow.getInteractor();
     //const clippingRange = renderer.getActiveCamera().getClippingRange();
@@ -422,9 +405,8 @@ export default {
     const istyleVolumeMapper = this.volumes[0].getMapper();
 
     istyle.setVolumeMapper(istyleVolumeMapper);
-    // istyle.setSliceNormal([0, 0, 1]);
 
-    //start with the middle slice
+    //start with the volume center slice
     const range = istyle.getSliceRange();
     istyle.setSlice((range[0] + range[1]) / 2);
 
@@ -456,10 +438,7 @@ export default {
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
 
-    // TODO: https://github.com/Kitware/vtk-js/issues/1157
-    // Fallback to manually cleanup things.
-    this.genericRenderWindow.setContainer(null);
-    this.genericRenderWindow.getOpenGLRenderWindow().delete();
+    // Delete the render context
     this.genericRenderWindow.delete();
 
     delete this.genericRenderWindow;

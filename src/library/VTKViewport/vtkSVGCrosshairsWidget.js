@@ -23,7 +23,6 @@ function vtkSVGCrosshairsWidget(publicAPI, model) {
 
     const { point, strokeColor, strokeWidth, strokeDashArray, padding } = model;
     if (point[0] === null || point[1] === null) {
-      // console.log("asked to draw with null points", point);
       return;
     }
 

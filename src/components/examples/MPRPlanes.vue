@@ -272,7 +272,6 @@ export default {
     },
     //{ slicePosition, index }
     onScrolled({ slicePosition, index } = {}) {
-      console.log("onscroll")
       let planes = [];
       Object.values(this.components).forEach(component => {
         const camera = component.genericRenderWindow
@@ -292,7 +291,6 @@ export default {
     },
     onCrosshairPointSelected({ index, worldPos }) {
       Object.entries(this.components).forEach(([viewportIndex, component]) => {
-        console.log(index, viewportIndex);
         if (viewportIndex !== index) {
           // We are basically doing the same as getSlice but with the world coordinate
           // that we want to jump to instead of the camera focal point.
@@ -444,8 +442,6 @@ export default {
           // TODO: find the volume center and set that as the slice intersection point.
           // TODO: Refactor the MPR slice to set the focal point instead of defaulting to volume center
           this.sliceIntersection = getVolumeCenter(volumeMapper);
-          console.log(this.sliceIntersection);
-
           this.volumes = [volumeActor];
           this.loading = false;
         });
@@ -455,7 +451,6 @@ export default {
     this.resizeFunction = () => {
       // not enough time between resize event and the right data coming through it seems.
       window.setTimeout(() => {
-        console.log("resized root");
         this.onScrolled();
       }, 10);
     };
