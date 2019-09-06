@@ -11,6 +11,7 @@
     <g :transform="viewTransform">
       <!-- Y line -->
       <g :transform="yTransform" :style="`color: ${yAxis.color}; fill: currentColor;`">
+        <!-- Axis & rotation interactors -->
         <line
           :x1="x"
           :y1="y - maxLength"
@@ -18,8 +19,6 @@
           :y2="y + maxLength"
           style="stroke: currentColor; stroke-width:2"
         />
-        <rect :x="x-4" :y="y + squarePos" width="8" height="8" class="hoverSOON" />
-        <rect :x="x-4" :y="y - squarePos - 8" width="8" height="8" class="hoverSOON" />
         <circle
           :cx="x"
           :cy="y + circlePos"
@@ -34,10 +33,32 @@
           @mousedown="(event) => startRotateY(event, true)"
           :class="{'hover':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
         />
+        <!-- Thickness interactors -->
+        <rect :x="x-4 + yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" @click="startThicknessY"/>
+        <rect :x="x-4 + yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" @click="startThicknessY"/>
+        <g v-if="yAxis.thickness >= 1">
+          <rect :x="x-4 - yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" />
+          <rect :x="x-4 - yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" />
+          <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
+            <line
+              :x1="x - yThicknessPixels"
+              :y1="y - maxLength"
+              :x2="x - yThicknessPixels"
+              :y2="y + maxLength"
+            />
+            <line
+              :x1="x + yThicknessPixels"
+              :y1="y - maxLength"
+              :x2="x + yThicknessPixels"
+              :y2="y + maxLength"
+            />
+          </g>
+        </g>
       </g>
 
       <!-- X line -->
       <g :transform="xTransform" :style="`color: ${xAxis.color}; fill: currentColor;`">
+        <!-- Axis & rotation interactors -->
         <line
           :x1="x - maxLength"
           :y1="y"
@@ -45,9 +66,6 @@
           :y2="y"
           style="stroke: currentColor; stroke-width:2"
         />
-        <rect :x="x + squarePos" :y="y-4" width="8" height="8" class="hoverSOON" />
-        <rect :x="x - squarePos - 8" :y="y-4" width="8" height="8" class="hoverSOON" />
-
         <circle
           :cx="x + circlePos"
           :cy="y"
@@ -62,6 +80,27 @@
           @mousedown="(event) => startRotateX(event, true)"
           :class="{'hover':true, 'active': mousedown && action === 'rotateX' && invertAngle}"
         />
+        <!-- Thickness interactors -->
+        <rect :x="x + squarePos" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX" />
+        <rect :x="x - squarePos - 8" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX" />
+        <g v-if="xAxis.thickness >= 1">
+          <rect :x="x + squarePos" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX" />
+          <rect :x="x - squarePos - 8" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX"/>
+          <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
+            <line
+              :x1="x - maxLength"
+              :y1="y - xThicknessPixels"
+              :x2="x + maxLength"
+              :y2="y - xThicknessPixels"
+            />
+            <line
+              :x1="x - maxLength"
+              :y1="y + xThicknessPixels"
+              :x2="x + maxLength"
+              :y2="y + xThicknessPixels"
+            />
+          </g>
+        </g>
       </g>
     </g>
   </svg>
@@ -77,7 +116,7 @@ export default {
   props: {
     width: Number,
     height: Number,
-    point: Array,
+    point: Array | Boolean,
     lockAxis: {
       type: Boolean,
       default: true
@@ -94,14 +133,16 @@ export default {
       type: Object,
       default: () => ({
         color: "red",
-        rotation: 0
+        rotation: 0,
+        thickness: 0,
       })
     },
     yAxis: {
       type: Object,
       default: () => ({
         color: "blue",
-        rotation: 0
+        rotation: 0,
+        thickness: 0,
       })
     }
   },
@@ -217,6 +258,18 @@ export default {
     },
     yStyle() {
       return `color: ${this.yAxis.color}; stroke: currentColor; stroke-width:2`;
+    },
+    xThicknessPixels(){
+      // TODO: also get the pixels to world coords ratio, so the thickness is actually reflecting the area being sliced
+      let pxRatio = 1
+      // divide by 2 so width is centered on the axisß
+      return this.xAxis.thickness >= 1 ? this.xAxis.thickness * pxRatio / 2 : 0;
+    },
+    yThicknessPixels(){
+      // TODO: also get the pixels to world coords ratio
+      let pxRatio = 1
+      // divide by 2 so width is centered on the axis
+      return this.yAxis.thickness >= 1 ? this.yAxis.thickness * pxRatio / 2: 0;
     },
 
     maxLength() {

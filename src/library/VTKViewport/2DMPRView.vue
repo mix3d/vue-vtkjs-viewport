@@ -245,8 +245,10 @@ export default {
 
     sliceThickness(thicc) {
       const istyle = this.renderWindow.getInteractor().getInteractorStyle();
-      //set thickness if the current interactor has it
+      // set thickness if the current interactor has it
       istyle.setSlabThickness && istyle.setSlabThickness(thicc);
+      // TODO: automatically set blendMode to MIP when setting thickness, back to none when below 1?
+      // Maybe better futher up?
       this.renderWindow.render();
     },
 
@@ -308,17 +310,20 @@ export default {
         case "top":
           return {
             color: this.views.front.color,
-            rotation: this.views.front.slicePlaneYRotation
+            rotation: this.views.front.slicePlaneYRotation,
+            thickness: this.views.front.sliceThickness,
           };
         case "left":
           return {
             color: this.views.top.color,
-            rotation: this.views.top.slicePlaneXRotation
+            rotation: this.views.top.slicePlaneXRotation,
+            thickness: this.views.top.sliceThickness,
           };
         case "front":
           return {
             color: this.views.top.color,
-            rotation: this.views.top.slicePlaneYRotation
+            rotation: this.views.top.slicePlaneYRotation,
+            thickness: this.views.top.sliceThickness,
           };
       }
     },
@@ -327,33 +332,34 @@ export default {
         case "top":
           return {
             color: this.views.left.color,
-            rotation: this.views.left.slicePlaneYRotation
+            rotation: this.views.left.slicePlaneYRotation,
+            thickness: this.views.left.sliceThickness,
           };
         case "left":
           return {
             color: this.views.front.color,
-            rotation: this.views.front.slicePlaneXRotation
+            rotation: this.views.front.slicePlaneXRotation,
+            thickness: this.views.front.sliceThickness,
           };
         case "front":
           return {
             color: this.views.left.color,
-            rotation: this.views.left.slicePlaneXRotation
+            rotation: this.views.left.slicePlaneXRotation,
+            thickness: this.views.left.sliceThickness,
           };
       }
     },
 
     screenCoordSliceIntersection() {
       const point3d = this.sliceIntersection;
-      // console.log("computing screenCoord", point3d)
       if (this.renderer) {
         const wPos = vtkCoordinate.newInstance();
         wPos.setCoordinateSystemToWorld();
         wPos.setValue(point3d);
         const canvasCoords = wPos.getComputedDisplayValue(this.renderer);
-        // console.log("converted to:", wPos.getComputedDisplayValue(this.renderer))
         return canvasCoords;
       } else {
-        return [-10000, -10000];
+        return false;
       }
     },
     voi() {
