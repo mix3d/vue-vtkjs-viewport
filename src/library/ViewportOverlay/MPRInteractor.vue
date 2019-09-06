@@ -23,22 +23,22 @@
           :cx="x"
           :cy="y + circlePos"
           r="6"
-          @mousedown="(event) => startRotateY(event)"
+          @mousedown="(e) => startAction(e, 'rotateY')"
           :class="{'hover':true, 'active': mousedown && action === 'rotateY' && !invertAngle}"
         />
         <circle
           :cx="x"
           :cy="y - circlePos"
           r="6"
-          @mousedown="(event) => startRotateY(event, true)"
+          @mousedown="(e) => startAction(e, 'rotateY', true)"
           :class="{'hover':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
         />
         <!-- Thickness interactors -->
-        <rect :x="x-4 + yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" @click="startThicknessY"/>
-        <rect :x="x-4 + yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" @click="startThicknessY"/>
+        <rect :x="x-4 + yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
+        <rect :x="x-4 + yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
         <g v-if="yAxis.thickness >= 1">
-          <rect :x="x-4 - yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" />
-          <rect :x="x-4 - yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" />
+          <rect :x="x-4 - yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
+          <rect :x="x-4 - yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
           <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
             <line
               :x1="x - yThicknessPixels"
@@ -70,22 +70,22 @@
           :cx="x + circlePos"
           :cy="y"
           r="6"
-          @mousedown="(event) => startRotateX(event)"
+          @mousedown="(e) => startAction(e, 'rotateX')"
           :class="{'hover':true, 'active': mousedown && action === 'rotateX' && !invertAngle}"
         />
         <circle
           :cx="x - circlePos"
           :cy="y"
           r="6"
-          @mousedown="(event) => startRotateX(event, true)"
+          @mousedown="(e) => startAction(e, 'rotateX', true)"
           :class="{'hover':true, 'active': mousedown && action === 'rotateX' && invertAngle}"
         />
         <!-- Thickness interactors -->
-        <rect :x="x + squarePos" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX" />
-        <rect :x="x - squarePos - 8" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX" />
+        <rect :x="x + squarePos" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')" />
+        <rect :x="x - squarePos - 8" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')" />
         <g v-if="xAxis.thickness >= 1">
-          <rect :x="x + squarePos" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX" />
-          <rect :x="x - squarePos - 8" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="startThicknessX"/>
+          <rect :x="x + squarePos" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')" />
+          <rect :x="x - squarePos - 8" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')"/>
           <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
             <line
               :x1="x - maxLength"
@@ -230,17 +230,13 @@ export default {
         }
       }
     },
-    startRotateX(event, invertAngle = false) {
-      this.action = "rotateX";
+    startAction(event, action, invertAngle = false) {
+      this.action = action;
       this.mousedown = true;
-      this.invertAngle = invertAngle;
-      this.axisOffset = this.xAxis.rotation - this.yAxis.rotation;
-    },
-    startRotateY(event, invertAngle = false) {
-      this.action = "rotateY";
-      this.mousedown = true;
-      this.invertAngle = invertAngle;
-      this.axisOffset = this.yAxis.rotation - this.xAxis.rotation;
+      if(action.startsWith("rotate")){
+        this.invertAngle = invertAngle;
+        this.axisOffset = action.endsWith("X") ? this.xAxis.rotation - this.yAxis.rotation : this.yAxis.rotation - this.xAxis.rotation
+      }
     },
     endMove(event) {
       this.mousedown = false;
