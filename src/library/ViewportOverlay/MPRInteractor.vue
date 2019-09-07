@@ -6,7 +6,7 @@
     :viewBox="viewBox"
     @mousemove="onMove"
     @mouseup="endMove"
-    :class="{'captureMouse':mousedown}"
+    :class="{'captureMouse':mousedown, 'rotateCursor': mousedown && action.startsWith('rotate')}"
   >
     <g :transform="viewTransform">
       <!-- Y line -->
@@ -24,21 +24,21 @@
           :cy="y + circlePos"
           r="6"
           @mousedown="(e) => startAction(e, 'rotateY')"
-          :class="{'hover':true, 'active': mousedown && action === 'rotateY' && !invertAngle}"
+          :class="{'hover rotateCursor':true, 'active': mousedown && action === 'rotateY' && !invertAngle}"
         />
         <circle
           :cx="x"
           :cy="y - circlePos"
           r="6"
           @mousedown="(e) => startAction(e, 'rotateY', true)"
-          :class="{'hover':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
+          :class="{'hover rotateCursor':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
         />
         <!-- Thickness interactors -->
-        <rect :x="x-4 + yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
-        <rect :x="x-4 + yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
+        <rect :x="x-4 + yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
+        <rect :x="x-4 + yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
         <g v-if="yAxis.thickness >= 1">
-          <rect :x="x-4 - yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
-          <rect :x="x-4 - yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessY')" />
+          <rect :x="x-4 - yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
+          <rect :x="x-4 - yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
           <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
             <line
               :x1="x - yThicknessPixels"
@@ -71,21 +71,21 @@
           :cy="y"
           r="6"
           @mousedown="(e) => startAction(e, 'rotateX')"
-          :class="{'hover':true, 'active': mousedown && action === 'rotateX' && !invertAngle}"
+          :class="{'hover rotateCursor':true, 'active': mousedown && action === 'rotateX' && !invertAngle}"
         />
         <circle
           :cx="x - circlePos"
           :cy="y"
           r="6"
           @mousedown="(e) => startAction(e, 'rotateX', true)"
-          :class="{'hover':true, 'active': mousedown && action === 'rotateX' && invertAngle}"
+          :class="{'hover rotateCursor':true, 'active': mousedown && action === 'rotateX' && invertAngle}"
         />
         <!-- Thickness interactors -->
-        <rect :x="x + squarePos" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')" />
-        <rect :x="x - squarePos - 8" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')" />
+        <rect :x="x + squarePos" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')" />
+        <rect :x="x - squarePos - 8" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')" />
         <g v-if="xAxis.thickness >= 1">
-          <rect :x="x + squarePos" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')" />
-          <rect :x="x - squarePos - 8" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover" @click="(e) => startAction(e, 'thicknessX')"/>
+          <rect :x="x + squarePos" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')" />
+          <rect :x="x - squarePos - 8" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')"/>
           <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
             <line
               :x1="x - maxLength"
@@ -319,7 +319,7 @@ svg.captureMouse {
 }
 svg .hover {
   pointer-events: all;
-  cursor: "pointer";
+  /* cursor: "pointer"; */
   /* Increase the mouse hover area */
   stroke: transparent;
   stroke-width: 6;
@@ -327,5 +327,16 @@ svg .hover {
 svg .hover:hover,
 svg .hover.active {
   stroke: currentColor;
+}
+
+.thicknessCursor {
+  cursor: col-resize;
+}
+.rotateCursor {
+  cursor: url(data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyNC4yNDUiPjxwYXRoIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBkPSJNMTAgMjMuNzQ2Yy01LjIzOCAwLTkuNS00LjI2Mi05LjUtOS41YTkuOCA5LjggMCAwIDEgLjAxNC0uNTI3bC4wMjYtLjQ3M0g0LjU2NGwtLjA0NS41NDJBNS41MDcgNS41MDcgMCAwIDAgMTAgMTkuNzQ2YzMuMDMzIDAgNS41LTIuNDY3IDUuNS01LjUgMC0yLjg2NS0yLjItNS4yMjUtNS01LjQ3OHYzLjYwMWwtLjgzNS0uNzUxLTQuOTk5LTQuNS0uNDEzLS4zNzIuNDEzLS4zNzIgNS00LjUuODM0LS43NXYzLjYzNWM1LjAwNy4yNiA5IDQuNDE2IDkgOS40ODcgMCA1LjIzOC00LjI2MiA5LjUtOS41IDkuNXoiLz48L3N2Zz4=), pointer;
+}
+
+.crosshairCursor {
+  cursor: crosshair;
 }
 </style>

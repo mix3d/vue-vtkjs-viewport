@@ -43,6 +43,8 @@ export default {
     volumes: { type: Array, required: true },
     views: { type: Object, required: true },
 
+    parallel: { type: Boolean, default: false},
+
     // Front, Side, Top, etc, for which view data to use
     index: String,
 
@@ -53,44 +55,12 @@ export default {
       }
     },
 
-    // //Slice Plane
-    // slicePlaneNormal: {
-    //   type: Array,
-    //   default() {
-    //     return [0, 0, 1];
-    //   }
-    // },
-    // slicePlaneXRotation: { type: Number, default: 0 },
-    // slicePlaneYRotation: { type: Number, default: 0 },
-    // // Camera view Up
-    // sliceViewUp: {
-    //   type: Array,
-    //   default() {
-    //     return [0, 1, 0];
-    //   }
-    // },
-    // //0,90,180,270 rotation around the view axis
-    // viewRotation: {
-    //   type: Number,
-    //   default: 0,
-    //   validator: v => [0, 90, 180, 270].includes(v)
-    // },
-
-    // sliceThickness: { type: Number, default: 0, validator: v => v > 0 },
-
-    // //leveling
-    // windowWidth: { type: Number, default: 0 },
-    // windowCenter: { type: Number, default: 0 },
-
-    // blendMode: { type: String },
-
     dataDetails: Object,
     onCreated: Function,
     onDestroyed: Function
   },
   created() {
     this.genericRenderWindow = null;
-    // this.widgetManager = vtkWidgetManager.newInstance();
     this.cachedSlicePlane = [];
     this.cachedSliceViewUp = [];
   },
@@ -111,7 +81,7 @@ export default {
       this.$emit("rotate", this.index, axis, angle);
     },
     onResize() {
-      // TODO: debounce
+      // TODO: debounce?
       this.genericRenderWindow.resize();
 
       const [width, height] = [
@@ -120,8 +90,6 @@ export default {
       ];
       this.width = width;
       this.height = height;
-
-      // TODO: recalculate intersection.
     },
     updateVolumesForRendering(volumes) {
       if (volumes && volumes.length) {
@@ -245,10 +213,10 @@ export default {
 
     sliceThickness(thicc) {
       const istyle = this.renderWindow.getInteractor().getInteractorStyle();
-      // set thickness if the current interactor has it
+      // set thickness if the current interactor has it (it should)
       istyle.setSlabThickness && istyle.setSlabThickness(thicc);
       // TODO: automatically set blendMode to MIP when setting thickness, back to none when below 1?
-      // Maybe better futher up?
+      // Maybe better further up?
       this.renderWindow.render();
     },
 
@@ -270,6 +238,9 @@ export default {
         }
       }
       this.renderWindow.render();
+    },
+    parallel(p) {
+      this.renderer.getActiveCamera().setParallelProjection(p)
     }
   },
   computed: {
@@ -383,8 +354,13 @@ export default {
     let filters = [];
     let volumes = [];
 
-    this.renderer = this.genericRenderWindow.getRenderer();
     this.renderWindow = this.genericRenderWindow.getRenderWindow();
+    this.renderer = this.genericRenderWindow.getRenderer();
+
+    if(this.parallel) {
+      this.renderer.getActiveCamera().setParallelProjection(true)
+    }
+
     // update view node tree so that vtkOpenGLHardwareSelector can access the vtkOpenGLRenderer instance.
     const oglrw = this.genericRenderWindow.getOpenGLRenderWindow();
     oglrw.buildPass(true);
