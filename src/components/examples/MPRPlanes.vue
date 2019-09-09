@@ -113,6 +113,7 @@
             :onCreated="saveComponentRefGenerator(key)"
             :index="key"
             @rotate="onRotate"
+            @thickness="onThickness"
           />
         </div>
       </div>
@@ -235,9 +236,7 @@ export default {
     },
     setLevelTool([viewportIndex, component]) {
       const istyle = vtkInteractorStyleMPRWindowLevel.newInstance();
-      istyle.setOnScroll(slicePosition =>
-        this.onScrolled({ slicePosition, index: viewportIndex })
-      );
+      istyle.setOnScroll(this.onScrolled);
       istyle.setOnLevelsChanged(levels => {
         this.updateLevels({ ...levels, index: viewportIndex });
       });
@@ -245,9 +244,7 @@ export default {
     },
     setCrosshairTool([viewportIndex, component]) {
       const istyle = vtkInteractorStyleMPRCrosshairs.newInstance();
-      istyle.setOnScroll(slicePosition =>
-        this.onScrolled({ slicePosition, index: viewportIndex })
-      );
+      istyle.setOnScroll(this.onScrolled);
       istyle.setOnClickCallback(({ worldPos }) =>
         this.onCrosshairPointSelected({ worldPos, index: viewportIndex })
       );
@@ -270,8 +267,24 @@ export default {
           break;
       }
     },
-    //{ slicePosition, index }
-    onScrolled({ slicePosition, index } = {}) {
+    onThickness(index, axis, thickness){
+      const shouldBeMIP = thickness > 1
+      switch (index) {
+        case "top":
+          if (axis === "x") this.front.sliceThickness = thickness;
+          else if (axis === "y") this.left.sliceThickness = thickness;
+          break;
+        case "left":
+          if (axis === "x") this.top.sliceThickness = thickness;
+          else if (axis === "y") this.front.sliceThickness = thickness;
+          break;
+        case "front":
+          if (axis === "x") this.top.sliceThickness = thickness;
+          else if (axis === "y") this.left.sliceThickness = thickness;
+          break;
+      }
+    },
+    onScrolled() {
       let planes = [];
       Object.values(this.components).forEach(component => {
         const camera = component.genericRenderWindow

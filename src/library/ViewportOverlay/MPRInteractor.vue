@@ -34,11 +34,11 @@
           :class="{'hover rotateCursor':true, 'active': mousedown && action === 'rotateY' && invertAngle}"
         />
         <!-- Thickness interactors -->
-        <rect :x="x-4 + yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
-        <rect :x="x-4 + yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
+        <rect :x="x-4 + yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessY')" />
+        <rect :x="x-4 + yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessY')" />
         <g v-if="yAxis.thickness >= 1">
-          <rect :x="x-4 - yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
-          <rect :x="x-4 - yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessY')" />
+          <rect :x="x-4 - yThicknessPixels" :y="y + squarePos" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessY')" />
+          <rect :x="x-4 - yThicknessPixels" :y="y - squarePos - 8" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessY')" />
           <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
             <line
               :x1="x - yThicknessPixels"
@@ -81,11 +81,11 @@
           :class="{'hover rotateCursor':true, 'active': mousedown && action === 'rotateX' && invertAngle}"
         />
         <!-- Thickness interactors -->
-        <rect :x="x + squarePos" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')" />
-        <rect :x="x - squarePos - 8" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')" />
+        <rect :x="x + squarePos" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessX')" />
+        <rect :x="x - squarePos - 8" :y="y-4 - xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessX')" />
         <g v-if="xAxis.thickness >= 1">
-          <rect :x="x + squarePos" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')" />
-          <rect :x="x - squarePos - 8" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @click="(e) => startAction(e, 'thicknessX')"/>
+          <rect :x="x + squarePos" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessX')" />
+          <rect :x="x - squarePos - 8" :y="y-4 + xThicknessPixels" width="8" height="8" class="hover thicknessCursor" @mousedown="(e) => startAction(e, 'thicknessX')"/>
           <g style="stroke: currentColor; stroke-width:1; stroke-dasharray: 4;">
             <line
               :x1="x - maxLength"
@@ -158,15 +158,15 @@ export default {
     onMove(event) {
       if (this.mousedown) {
         const shiftKey = event.shiftKey;
-        switch (this.action) {
-          case "rotateX": {
+        const isX = this.action.endsWith("X");
+        const newPos = [event.offsetX, event.offsetY];
+
+        // account for the view's rotation by rotating the mouse position around the center
+        if(this.viewRotation)
+          vec2.rotate(newPos, newPos, [this.x, this.y], -glMatrix.toRadian(this.viewRotation))
+
+        if(this.action.startsWith("rotate")) {
             // calculate the rotation angle from mouse to center [x, y]
-
-            const newPos = [event.offsetX, event.offsetY];
-            // account for the view's rotation by rotating the mouse position around the center
-            if(this.viewRotation)
-              vec2.rotate(newPos, newPos, [this.x, this.y], -glMatrix.toRadian(this.viewRotation))
-
             const nx = newPos[0] - this.x;
             const ny = newPos[1] - this.y;
 
@@ -175,6 +175,10 @@ export default {
             if (this.invertAngle) {
               //if positive, subtract 180, if negative, add 180, to get the same value as the right handle
               angle += 180 * (angle < 0 ? 1 : -1);
+            }
+            if(!isX){
+              //account for Y axis difference
+              angle -= 90;
             }
 
             // NOTE: Use this only if we fix the 90deg bug and it works 0 - 180
@@ -186,47 +190,21 @@ export default {
             else if (angle <= -89) angle = -89;
 
             // emit the rotation
-            this.$emit("rotate", "x", angle);
+            this.$emit("rotate", isX ? "x" : "y", angle);
             if (this.lockAxis && !(this.shiftToUnlockAxis && shiftKey)) {
-              this.$emit("rotate", "y", angle - this.axisOffset);
-            }
-            break;
-          }
-          case "rotateY": {
-            // calculate the rotation angle from mouse to center [x, y]
-
-            const newPos = [event.offsetX, event.offsetY];
-            // account for the view's rotation by rotating the mouse position around the center
-            if(this.viewRotation)
-              vec2.rotate(newPos, newPos, [this.x, this.y], -glMatrix.toRadian(this.viewRotation))
-
-            const nx = newPos[0] - this.x;
-            const ny = newPos[1] - this.y;
-
-            let angle = Math.floor(radians2degrees(Math.atan2(ny, nx)));
-            //account for Y axis difference
-            angle -= 90;
-
-            if (this.invertAngle) {
-              //if positive, subtract 180, if negative, add 180, to get the same value as the right handle
-              angle += 180 * (angle < 0 ? 1 : -1);
+              this.$emit("rotate", !isX ? "x" : "y", angle - this.axisOffset);
             }
 
-            // Use this only if we fix the 90deg bug and it works 0 - 180
-            // if (angle >= 90) angle -= 180;
-            // else if (angle <= -90) angle += 180;
+        }
+        else if(this.action.startsWith("thickness")){
+          // adjust for the rotation of the plane to compare as if the axis wasn't rotated
+          vec2.rotate(newPos, newPos, [this.x, this.y], -glMatrix.toRadian(isX ? this.xAxis.rotation : this.yAxis.rotation))
+          let dist = Math.floor(isX ? Math.abs(newPos[1] - this.y) : Math.abs(newPos[0] - this.x))
 
-            // Otherwise force to a 178 angle swing
-            if (angle >= 89) angle = 89;
-            else if (angle <= -89) angle = -89;
-
-            // emit the rotation
-            this.$emit("rotate", "y", angle);
-            if (this.lockAxis && !(this.shiftToUnlockAxis && shiftKey)) {
-              this.$emit("rotate", "x", angle - this.axisOffset);
-            }
-            break;
-          }
+          // Have a deadzone so it can snap to "nothing". Default is 0.1. Must be > 0 or it shows nothing
+          if (dist < 3) dist = 0.05
+          // Multiply by 2 since the thickness is split between the axis
+          this.$emit('thickness', isX ? 'x' : 'y', dist * 2)
         }
       }
     },
@@ -333,7 +311,7 @@ svg .hover.active {
   cursor: col-resize;
 }
 .rotateCursor {
-  cursor: url(data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyNC4yNDUiPjxwYXRoIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBkPSJNMTAgMjMuNzQ2Yy01LjIzOCAwLTkuNS00LjI2Mi05LjUtOS41YTkuOCA5LjggMCAwIDEgLjAxNC0uNTI3bC4wMjYtLjQ3M0g0LjU2NGwtLjA0NS41NDJBNS41MDcgNS41MDcgMCAwIDAgMTAgMTkuNzQ2YzMuMDMzIDAgNS41LTIuNDY3IDUuNS01LjUgMC0yLjg2NS0yLjItNS4yMjUtNS01LjQ3OHYzLjYwMWwtLjgzNS0uNzUxLTQuOTk5LTQuNS0uNDEzLS4zNzIuNDEzLS4zNzIgNS00LjUuODM0LS43NXYzLjYzNWM1LjAwNy4yNiA5IDQuNDE2IDkgOS40ODcgMCA1LjIzOC00LjI2MiA5LjUtOS41IDkuNXoiLz48L3N2Zz4=), pointer;
+  cursor: url(data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyNC4yNDUiPjxwYXRoIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBkPSJNMTAgMjMuNzQ2Yy01LjIzOCAwLTkuNS00LjI2Mi05LjUtOS41YTkuOCA5LjggMCAwIDEgLjAxNC0uNTI3bC4wMjYtLjQ3M0g0LjU2NGwtLjA0NS41NDJBNS41MDcgNS41MDcgMCAwIDAgMTAgMTkuNzQ2YzMuMDMzIDAgNS41LTIuNDY3IDUuNS01LjUgMC0yLjg2NS0yLjItNS4yMjUtNS01LjQ3OHYzLjYwMWwtLjgzNS0uNzUxLTQuOTk5LTQuNS0uNDEzLS4zNzIuNDEzLS4zNzIgNS00LjUuODM0LS43NXYzLjYzNWM1LjAwNy4yNiA5IDQuNDE2IDkgOS40ODcgMCA1LjIzOC00LjI2MiA5LjUtOS41IDkuNXoiLz48L3N2Zz4=) 10 12, pointer;
 }
 
 .crosshairCursor {

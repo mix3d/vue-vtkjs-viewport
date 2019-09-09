@@ -10,6 +10,7 @@
       :viewRotation="viewRotation"
       :point="screenCoordSliceIntersection"
       @rotate="onRotate"
+      @thickness="onThickness"
     />
   </div>
 </template>
@@ -77,9 +78,14 @@ export default {
   },
 
   methods: {
+    // pass events to parent, including the view they came from
     onRotate(axis, angle) {
       this.$emit("rotate", this.index, axis, angle);
     },
+    onThickness(axis, thickness) {
+      this.$emit("thickness", this.index, axis, thickness)
+    },
+
     onResize() {
       // TODO: debounce?
       this.genericRenderWindow.resize();
