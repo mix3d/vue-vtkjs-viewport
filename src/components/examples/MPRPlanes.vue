@@ -269,20 +269,27 @@ export default {
     },
     onThickness(index, axis, thickness){
       const shouldBeMIP = thickness > 1
+      let view;
       switch (index) {
         case "top":
-          if (axis === "x") this.front.sliceThickness = thickness;
-          else if (axis === "y") this.left.sliceThickness = thickness;
+          if (axis === "x") view = this.front
+          else if (axis === "y") view = this.left
           break;
         case "left":
-          if (axis === "x") this.top.sliceThickness = thickness;
-          else if (axis === "y") this.front.sliceThickness = thickness;
+          if (axis === "x") view = this.top
+          else if (axis === "y") view = this.front
           break;
         case "front":
-          if (axis === "x") this.top.sliceThickness = thickness;
-          else if (axis === "y") this.left.sliceThickness = thickness;
+          if (axis === "x") view = this.top
+          else if (axis === "y") view = this.left
           break;
       }
+      view.sliceThickness = thickness;
+      // TODO: consts instead of magic strings
+      if (shouldBeMIP && view.blendMode === "none") view.blendMode = "MIP"
+      // else if(!shouldBeMIP) {
+      //   view.blendMode = "none"
+      // }
     },
     onScrolled() {
       let planes = [];

@@ -6,7 +6,7 @@
     :viewBox="viewBox"
     @mousemove="onMove"
     @mouseup="endMove"
-    :class="{'captureMouse':mousedown, 'rotateCursor': mousedown && action.startsWith('rotate')}"
+    :class="svgClass"
   >
     <g :transform="viewTransform">
       <!-- Y line -->
@@ -280,6 +280,13 @@ export default {
       }
       // 0 is bottom left in vtk land vs canvas/svg
       return this.height - this.point[1];
+    },
+    svgClass(){
+      return {
+        'captureMouse': this.mousedown,
+        'rotateCursor': this.mousedown && this.action.startsWith('rotate'),
+        'thicknessCursor': this.mousedown && this.action.startsWith('thickness')
+        }
     }
   }
 };
