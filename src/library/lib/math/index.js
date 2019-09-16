@@ -4,6 +4,7 @@ import { mean } from './mean.js';
 import { realsApproximatelyEqual } from './realsApproximatelyEqual.js';
 import { compareReals } from './compareReals.js';
 import { bsearch } from './bsearch.js';
+import { getPlaneIntersection } from './planeIntersections.js';
 
 // TODO: Use a library for this?
 const math = {
@@ -12,7 +13,8 @@ const math = {
   mean,
   realsApproximatelyEqual,
   compareReals,
-  bsearch
+  bsearch,
+  getPlaneIntersection
 };
 
 export { math };

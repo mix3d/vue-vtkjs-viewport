@@ -4,6 +4,7 @@ import PaintWidget from "./PaintWidget.vue";
 import SlicePlanes from "./SlicePlanes.vue";
 import ResliceWidget from "./ResliceWidget.vue";
 import MPRPlanes from "./MPRPlanes.vue";
+import MPRManager from "./MPRManager.vue";
 import DicomLoader from "./DicomLoader.vue";
 
 export const files = [
@@ -60,5 +61,12 @@ export default [
     url: "mpr",
     description: "Example of a fully functional MPR implementation",
     component: MPRPlanes
+  },
+  {
+    title: "MPR Manager",
+    url: "mpr-manager",
+    description:
+      "MPR manager component that hides internal logic but exposes needed events for modifying data",
+    component: MPRManager
   }
 ];

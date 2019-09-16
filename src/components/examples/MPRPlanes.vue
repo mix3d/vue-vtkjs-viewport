@@ -24,7 +24,7 @@
       </div>
       <div class="row">
         <div class="col" v-for="(view, key) in viewDataArray" :key="key">
-          <table>
+          <table style="background: white; margin: 10px; border-radius: 6px; padding: 4px;">
             <tr>
               <td>
                 <strong>{{ key }}</strong>
@@ -165,8 +165,10 @@ export default {
         viewRotation: 0,
         sliceThickness: 0.1,
         blendMode: "none",
-        windowCenter: 0,
-        windowWidth: 0
+        window: {
+          width: 0,
+          center: 0
+        },
       },
       left: {
         color: "#A62CF8",
@@ -177,8 +179,10 @@ export default {
         viewRotation: 0,
         sliceThickness: 0.1,
         blendMode: "none",
-        windowCenter: 0,
-        windowWidth: 0
+        window: {
+          width: 0,
+          center: 0
+        },
       },
       front: {
         color: "#2C92F8",
@@ -189,8 +193,10 @@ export default {
         viewRotation: 0,
         sliceThickness: 0.1,
         blendMode: "none",
-        windowCenter: 0,
-        windowWidth: 0
+        window: {
+          width: 0,
+          center: 0
+        },
       }
     };
   },
@@ -351,13 +357,13 @@ export default {
     },
 
     updateLevels({ windowCenter, windowWidth, index }) {
-      this[index].windowCenter = windowCenter;
-      this[index].windowWidth = windowWidth;
+      this[index].window.center = windowCenter;
+      this[index].window.width = windowWidth;
 
       if (this.syncWindowLevels) {
         Object.entries(this.components).filter(([key]) => key !== index).forEach(([key, component]) => {
-          this[key].windowCenter = windowCenter;
-          this[key].windowWidth = windowWidth;
+          this[key].window.center = windowCenter;
+          this[key].window.width = windowWidth;
           component.genericRenderWindow.getInteractor().getInteractorStyle().setWindowLevel(windowWidth, windowCenter);
           component.genericRenderWindow.getRenderWindow().render();
         })
@@ -435,8 +441,8 @@ export default {
           rgbTransferFunction.setMappingRange(500, 3000);
 
           Object.values(this.viewDataArray).forEach(view => {
-            view.windowCenter = 500;
-            view.windowWidth = 3000;
+            view.window.center = 500;
+            view.window.width = 3000;
           });
 
           // update slice min/max values for interface
@@ -623,10 +629,6 @@ const getVOI = volume => {
 </script>
 
 <style scoped>
-.col {
-  max-height: 400px;
-}
-
 button {
   font-size: 14px;
   line-height: 20px;
@@ -646,5 +648,20 @@ button.active {
 
 label + input {
   margin-left: 12px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  /* max-height: 600px; */
+  padding: 2px;
+  background: #000;
+}
+.col {
+  flex: 1;
+  max-height: 400px;
+}
+.col + .col {
+  margin-left: 2px;
 }
 </style>

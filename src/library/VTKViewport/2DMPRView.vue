@@ -1,7 +1,6 @@
 <template>
   <div v-if="volumes && volumes.length" class="viewer2d">
     <div ref="container" class="container2d" />
-    <ViewportOverlay v-bind="dataDetails" :voi="voi" :color="viewColor" />
     <MPRInteractor
       :width="width"
       :height="height"
@@ -12,6 +11,7 @@
       @rotate="onRotate"
       @thickness="onThickness"
     />
+    <ViewportOverlay v-bind="dataDetails" :voi="voi" :active="isActive" :color="viewColor" />
   </div>
 </template>
 
@@ -21,21 +21,18 @@
  */
 
 import vtkGenericRenderWindow from "vtk.js/Sources/Rendering/Misc/GenericRenderWindow";
-
+import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
 import { quat, vec3, mat4 } from "gl-matrix";
 
 // Use modified MPRSlice interactor
 import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice";
-import vtkInteractorStyleMPRCrosshairs from "./vtkInteractorStyleMPRCrosshairs";
-import vtkInteractorStyleMPRWindowLevel from "./vtkInteractorStyleMPRWindowLevel";
-
-import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
-
-import { createSub } from "../lib/createSub.js";
-import { degrees2radians } from "../lib/math/angles.js";
 
 import ViewportOverlay from "../ViewportOverlay/ViewportOverlay.vue";
 import MPRInteractor from "../ViewportOverlay/MPRInteractor.vue";
+
+import { BLEND_MIP, BLEND_MINIP, BLEND_AVG, BLEND_NONE } from './consts';
+import { createSub } from "../lib/createSub.js";
+import { degrees2radians } from "../lib/math/angles.js";
 
 export default {
   name: "view-2d-mpr",
@@ -87,7 +84,7 @@ export default {
     },
 
     onResize() {
-      // TODO: debounce?
+      // TODO: debounce for performance reasons?
       this.genericRenderWindow.resize();
 
       const [width, height] = [
@@ -193,6 +190,28 @@ export default {
     },
     onCrosshairPointSelected(data) {
       this.$emit("crosshairPointSelected", { ...data, index: this.index });
+    },
+    updateBlendMode(thickness) {
+      if (this.sliceThickness >= 1) {
+        switch (this.blendMode) {
+          case BLEND_MIP:
+            this.volumes[0].getMapper().setBlendModeToMaximumIntensity();
+            break;
+          case BLEND_MINIP:
+            this.volumes[0].getMapper().setBlendModeToMinimumIntensity();
+            break;
+          case BLEND_AVG:
+            this.volumes[0].getMapper().setBlendModeToAverageIntensity();
+            break;
+          case BLEND_NONE:
+          default:
+            this.volumes[0].getMapper().setBlendModeToComposite();
+            break;
+        }
+      } else {
+        this.volumes[0].getMapper().setBlendModeToComposite();
+      }
+      this.renderWindow.render();
     }
   },
   watch: {
@@ -217,37 +236,19 @@ export default {
       this.updateSlicePlane();
     },
 
-    sliceThickness(thicc) {
+    sliceThickness(thickness) {
       const istyle = this.renderWindow.getInteractor().getInteractorStyle();
-      // set thickness if the current interactor has it (it should)
-      istyle.setSlabThickness && istyle.setSlabThickness(thicc);
-      // TODO: automatically set blendMode to MIP when setting thickness, back to none when below 1?
-      // Maybe better further up?
-      this.renderWindow.render();
+      // set thickness if the current interactor has it (it should, but just in case)
+      istyle.setSlabThickness && istyle.setSlabThickness(thickness);
+      this.updateBlendMode(thickness)
     },
 
     blendMode(mode) {
-      if (this.sliceThickness > 1) {
-        switch (mode) {
-          case "MIP":
-            this.volumes[0].getMapper().setBlendModeToMaximumIntensity();
-            break;
-          case "MINIP":
-            this.volumes[0].getMapper().setBlendModeToMinimumIntensity();
-            break;
-          case "AVG":
-            this.volumes[0].getMapper().setBlendModeToAverageIntensity();
-            break;
-          default:
-            this.volumes[0].getMapper().setBlendModeToComposite();
-            break;
-        }
-      }
-      this.renderWindow.render();
+      this.updateBlendMode(this.sliceThickness)
     },
     parallel(p) {
       this.renderer.getActiveCamera().setParallelProjection(p)
-    }
+    },
   },
   computed: {
     // Cribbed from the index and views
@@ -269,17 +270,17 @@ export default {
     sliceThickness() {
       return this.views[this.index].sliceThickness;
     },
-    windowWidth() {
-      return this.views[this.index].windowWidth;
-    },
-    windowCenter() {
-      return this.views[this.index].windowCenter;
+    window() {
+      return this.views[this.index].window;
     },
     blendMode() {
       return this.views[this.index].blendMode;
     },
     viewColor() {
       return this.views[this.index].color;
+    },
+    isActive() {
+      return this.views[this.index].active;
     },
 
     xAxis() {
@@ -340,7 +341,7 @@ export default {
       }
     },
     voi() {
-      return { windowWidth: this.windowWidth, windowCenter: this.windowCenter };
+      return { windowWidth: this.window.width, windowCenter: this.window.center };
     }
   },
   mounted() {

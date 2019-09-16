@@ -1,6 +1,7 @@
 <template>
-  <div class="ViewportOverlay">
+  <div class="ViewportOverlay" :style="borderStyle">
     <div v-if="color" class="viewColor" :style="colorStyle"></div>
+    <div class="border overlay-element" :style="borderStyle" />
     <div class="top-left overlay-element">
       <div>{{ formatPN(patientName) }}</div>
       <div>{{ patientId }}</div>
@@ -41,6 +42,7 @@ export default {
         windowCenter: 0
       })
     },
+    active: Boolean,
     studyDate: String,
     studyTime: String,
     studyDescription: String,
@@ -58,6 +60,9 @@ export default {
     isValidNumber
   },
   computed: {
+    borderStyle() {
+      return this.active && this.color && `border-color: ${this.color}` || '';
+    },
     colorStyle(){
       return this.color && `background: ${this.color}` || '';
     },
@@ -80,17 +85,35 @@ export default {
 
   .viewColor{
     position: absolute;
-    top:0;
-    right:0;
-    width: 16px;
-    height: 16px;
+    top: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    z-index: 100;
+    // border-radius: 100%;
+  }
+
+  .border {
+    border: 2px solid white;
+    top: 0;
+    left:0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
   }
 
   .overlay-element {
     position: absolute;
     font-weight: 400;
     text-shadow: 1px 1px black;
+
     pointer-events: none;
+    -ms-user-select:none;
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    user-select:none;
+
   }
 
   .top-left {
@@ -120,16 +143,6 @@ export default {
     bottom: var(--viewport-tag-padding);
     right: var(--viewport-tag-padding);
     text-align: right;
-  }
-
-  svg {
-    color: #9ccef9;
-    fill: #9ccef9;
-    stroke: #9ccef9;
-    background-color: transparent;
-    margin: 2px;
-    width: 18px;
-    height: 18px;
   }
 }
 </style>
