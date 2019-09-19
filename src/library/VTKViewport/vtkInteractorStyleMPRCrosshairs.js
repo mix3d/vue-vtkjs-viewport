@@ -84,7 +84,7 @@ function vtkInteractorStyleMPRCrosshairs(publicAPI, model) {
 
   const superHandleMouseMove = publicAPI.handleMouseMove;
   publicAPI.handleMouseMove = callData => {
-    if (model.state === States.IS_WINDOW_LEVEL) {
+    if (model.state === States.IS_SLICE) {
       launchCallback(callData);
     }
 
@@ -98,7 +98,7 @@ function vtkInteractorStyleMPRCrosshairs(publicAPI, model) {
     if (!callData.shiftKey && !callData.controlKey) {
       if (model.volumeMapper) {
         launchCallback(callData);
-        publicAPI.startWindowLevel();
+        publicAPI.startSlice();
       }
     } else if (superHandleLeftButtonPress) {
       superHandleLeftButtonPress(callData);
@@ -126,8 +126,8 @@ function vtkInteractorStyleMPRCrosshairs(publicAPI, model) {
   publicAPI.superHandleLeftButtonRelease = publicAPI.handleLeftButtonRelease;
   publicAPI.handleLeftButtonRelease = () => {
     switch (model.state) {
-      case States.IS_WINDOW_LEVEL:
-        publicAPI.endWindowLevel();
+      case States.IS_SLICE:
+        publicAPI.endSlice();
         break;
 
       default:
