@@ -113,31 +113,19 @@ export default {
       }
       this.renderWindow.render();
     },
-    updateSlicePlane(ops = {}) {
+    updateSlicePlane() {
       // TODO: optimize so you don't have to calculate EVERYTHING every time?
 
-      // TODO: Confirm that we never need to pass overrides
-      const input = {
-        //defaults
-        slicePlaneNormal: this.slicePlaneNormal,
-        sliceViewUp: this.sliceViewUp,
-        sliceXRot: this.slicePlaneXRotation,
-        sliceYRot: this.slicePlaneYRotation,
-        viewRotation: this.viewRotation,
-        //merge / overwrite function inputs
-        ...ops
-      };
-
       // rotate around the vector of the cross product of the plane and viewup as the X component
-      let sliceXRot = [];
-      vec3.cross(sliceXRot, input.sliceViewUp, input.slicePlaneNormal);
-      vec3.normalize(sliceXRot, sliceXRot);
+      let sliceXRotVector = [];
+      vec3.cross(sliceXRotVector, this.sliceViewUp, this.slicePlaneNormal);
+      vec3.normalize(sliceXRotVector, sliceXRotVector);
 
       // rotate the viewUp vector as the Y component
-      let sliceYRot = this.sliceViewUp;
+      let sliceYRotVector = this.sliceViewUp;
 
       // const yQuat = quat.create();
-      // quat.setAxisAngle(yQuat, input.sliceViewUp, degrees2radians(input.sliceYRot));
+      // quat.setAxisAngle(yQuat, input.sliceViewUp, degrees2radians(this.slicePlaneYRotation));
       // quat.normalize(yQuat, yQuat);
 
       // Rotate the slicePlaneNormal using the x & y rotations.
@@ -151,14 +139,14 @@ export default {
       mat4.rotate(
         planeMat,
         planeMat,
-        degrees2radians(input.sliceYRot),
-        sliceYRot
+        degrees2radians(this.slicePlaneYRotation),
+        sliceYRotVector
       );
       mat4.rotate(
         planeMat,
         planeMat,
-        degrees2radians(input.sliceXRot),
-        sliceXRot
+        degrees2radians(this.slicePlaneXRotation),
+        sliceXRotVector
       );
       vec3.transformMat4(
         this.cachedSlicePlane,
@@ -172,13 +160,13 @@ export default {
       quat.setAxisAngle(
         viewRotQuat,
         this.cachedSlicePlane,
-        degrees2radians(-input.viewRotation)
+        degrees2radians(-this.viewRotation)
       );
       quat.normalize(viewRotQuat, viewRotQuat);
 
       // rotate the ViewUp with the x and z rotations
       const xQuat = quat.create();
-      quat.setAxisAngle(xQuat, sliceXRot, degrees2radians(input.sliceXRot));
+      quat.setAxisAngle(xQuat, sliceXRotVector, degrees2radians(this.slicePlaneXRotation));
       quat.normalize(xQuat, xQuat);
       const viewUpQuat = quat.create();
       quat.add(viewUpQuat, xQuat, viewRotQuat);
