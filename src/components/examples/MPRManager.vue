@@ -19,9 +19,17 @@
           <img src="https://img.icons8.com/material/344/define-location.png" />
           Select
         </button>
-        <span><input type="checkbox" id="checkbox" v-model="syncWindowLevels"> <label for="checkbox">Sync Window Leveling</label> </span>
+        <span>
+          <input type="checkbox" id="checkbox" v-model="syncWindowLevels" />
+          <label for="checkbox">Sync Window Leveling</label>
+        </span>
         <table>
-          <tr><td>Blend Mode for active Window: <b>{{activeWindowTitle}}</b></td></tr>
+          <tr>
+            <td>
+              Blend Mode for active Window:
+              <b>{{activeWindowTitle}}</b>
+            </td>
+          </tr>
           <tr>
             <td>
               <input type="radio" id="1blend" value="none" v-model="activeView.blendMode" />
@@ -44,13 +52,11 @@
         :viewData="viewData"
         :syncWindowLevels="syncWindowLevels"
         :activeTool="activeTool"
-
         @rotate="onRotate"
         @thickness="onThickness"
         @activity="onActivity"
         @windowLevels="onWindowLevels"
       />
-
     </div>
   </div>
 </template>
@@ -69,17 +75,14 @@ import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 
-import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
-import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
-// import vtkMath from "vtk.js/Sources/Common/Core/Math";
 import vtkPlane from "vtk.js/Sources/Common/DataModel/Plane";
 
 import { files } from "@/components/examples";
-import { LEVEL_TOOL, SELECT_TOOL } from '@/library/VTKViewport/consts';
+import { LEVEL_TOOL, SELECT_TOOL } from "@/library/VTKViewport/consts";
 
 export default {
   components: {
-    "MPRManager": MPRManager
+    MPRManager
   },
   data() {
     return {
@@ -104,7 +107,7 @@ export default {
             width: 0,
             center: 0
           },
-          active: true,
+          active: true
         },
         left: {
           color: "#A62CF8",
@@ -136,15 +139,15 @@ export default {
           },
           active: false
         }
-      },
+      }
     };
   },
   computed: {
     activeView() {
-      return Object.values(this.viewData).find(v => v.active)
+      return Object.values(this.viewData).find(v => v.active);
     },
     activeWindowTitle() {
-      const res = Object.entries(this.viewData).find(([i,v]) => v.active)
+      const res = Object.entries(this.viewData).find(([i, v]) => v.active);
       return res[0];
     }
   },
@@ -155,7 +158,7 @@ export default {
   watch: {
     selectedFile(newVal) {
       this.loadData(newVal);
-    },
+    }
   },
   methods: {
     selectTool(tool) {
@@ -169,16 +172,16 @@ export default {
       this.viewData[index].sliceThickness = thickness;
       //TODO: change MIP style
     },
-    onActivity(index){
-      Object.entries(this.viewData).forEach(([i,v]) => { v.active = i === index });
+    onActivity(index) {
+      Object.entries(this.viewData).forEach(([i, v]) => {
+        v.active = i === index;
+      });
     },
-    onWindowLevels({index, windowCenter, windowWidth }) {
+    onWindowLevels({ index, windowCenter, windowWidth }) {
       // Only set the view data that is displayed. The actual values are handled internally?
       // TODO: Confirm that this is ok, maybe the children should listen to changes to these values and update on their own?
       this.viewData[index].window.center = windowCenter;
       this.viewData[index].window.width = windowWidth;
-
-
     },
     loadData(fileString) {
       this.loading = true;
@@ -202,29 +205,12 @@ export default {
   mounted() {
     this.loadData();
   },
-  beforeDestroy() {
-  }
+  beforeDestroy() {}
 };
 
-
-const getVOI = volume => {
-  // Note: This controls window/level
-
-  // TODO: Make this work reactively with onModified...
-  const rgbTransferFunction = volume.getProperty().getRGBTransferFunction(0);
-  const range = rgbTransferFunction.getMappingRange();
-  const windowWidth = range[0] + range[1];
-  const windowCenter = range[0] + windowWidth / 2;
-
-  return {
-    windowCenter,
-    windowWidth
-  };
-};
 </script>
 
 <style scoped>
-
 button {
   font-size: 14px;
   line-height: 20px;

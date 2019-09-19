@@ -19,7 +19,10 @@
           <img src="https://img.icons8.com/material/344/define-location.png" />
           Select
         </button>
-        <p><input type="checkbox" id="checkbox" v-model="syncWindowLevels"> <label for="checkbox">Sync Window Leveling</label> </p>
+        <p>
+          <input type="checkbox" id="checkbox" v-model="syncWindowLevels" />
+          <label for="checkbox">Sync Window Leveling</label>
+        </p>
         <p>Intersect point: {{sliceIntersection}}</p>
       </div>
       <div class="row">
@@ -168,7 +171,7 @@ export default {
         window: {
           width: 0,
           center: 0
-        },
+        }
       },
       left: {
         color: "#A62CF8",
@@ -182,7 +185,7 @@ export default {
         window: {
           width: 0,
           center: 0
-        },
+        }
       },
       front: {
         color: "#2C92F8",
@@ -196,7 +199,7 @@ export default {
         window: {
           width: 0,
           center: 0
-        },
+        }
       }
     };
   },
@@ -273,26 +276,26 @@ export default {
           break;
       }
     },
-    onThickness(index, axis, thickness){
-      const shouldBeMIP = thickness > 1
+    onThickness(index, axis, thickness) {
+      const shouldBeMIP = thickness > 1;
       let view;
       switch (index) {
         case "top":
-          if (axis === "x") view = this.front
-          else if (axis === "y") view = this.left
+          if (axis === "x") view = this.front;
+          else if (axis === "y") view = this.left;
           break;
         case "left":
-          if (axis === "x") view = this.top
-          else if (axis === "y") view = this.front
+          if (axis === "x") view = this.top;
+          else if (axis === "y") view = this.front;
           break;
         case "front":
-          if (axis === "x") view = this.top
-          else if (axis === "y") view = this.left
+          if (axis === "x") view = this.top;
+          else if (axis === "y") view = this.left;
           break;
       }
       view.sliceThickness = thickness;
       // TODO: consts instead of magic strings
-      if (shouldBeMIP && view.blendMode === "none") view.blendMode = "MIP"
+      if (shouldBeMIP && view.blendMode === "none") view.blendMode = "MIP";
       // else if(!shouldBeMIP) {
       //   view.blendMode = "none"
       // }
@@ -361,12 +364,17 @@ export default {
       this[index].window.width = windowWidth;
 
       if (this.syncWindowLevels) {
-        Object.entries(this.components).filter(([key]) => key !== index).forEach(([key, component]) => {
-          this[key].window.center = windowCenter;
-          this[key].window.width = windowWidth;
-          component.genericRenderWindow.getInteractor().getInteractorStyle().setWindowLevel(windowWidth, windowCenter);
-          component.genericRenderWindow.getRenderWindow().render();
-        })
+        Object.entries(this.components)
+          .filter(([key]) => key !== index)
+          .forEach(([key, component]) => {
+            this[key].window.center = windowCenter;
+            this[key].window.width = windowWidth;
+            component.genericRenderWindow
+              .getInteractor()
+              .getInteractorStyle()
+              .setWindowLevel(windowWidth, windowCenter);
+            component.genericRenderWindow.getRenderWindow().render();
+          });
       }
     },
 

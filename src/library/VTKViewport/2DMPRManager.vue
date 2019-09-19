@@ -37,6 +37,7 @@ import vtkInteractorStyleMPRCrosshairs from "./vtkInteractorStyleMPRCrosshairs";
 import vtkInteractorStyleMPRWindowLevel from "./vtkInteractorStyleMPRWindowLevel";
 import getPlaneIntersection from "../lib/math/planeIntersections";
 
+import { toWindowLevel } from "../lib/windowLevelRangeConverter";
 
 export default {
   components: {
@@ -50,6 +51,10 @@ export default {
     syncWindowLevels: {
       type: Boolean,
       default: false
+    },
+    windowLevelScale: {
+      type: Number,
+      default: 5
     },
     volumeData: {
       type: Object,
@@ -144,6 +149,7 @@ export default {
       istyle.setOnLevelsChanged(levels => {
         this.updateLevels({ ...levels, index: viewportIndex });
       });
+      istyle.setLevelScale(this.windowLevelScale)
       setInteractor(component, istyle);
     },
     setCrosshairTool([viewportIndex, component]) {
@@ -297,11 +303,16 @@ export default {
 
       volumeMapper.setInputData(this.volumeData);
 
-      // FIXME: custom range mapping
+      const initialRange = this.volumeData
+        .getPointData()
+        .getScalars()
+        .getRange();
+
+      // TODO: Keybind values that set the mapping range
       const rgbTransferFunction = volumeActor
         .getProperty()
         .getRGBTransferFunction(0);
-      rgbTransferFunction.setMappingRange(500, 3000);
+      rgbTransferFunction.setMappingRange(...initialRange);
 
       const { windowWidth, windowCenter } = getVOI(volumeActor);
 
@@ -396,7 +407,7 @@ const getVOI = volume => {
   margin-left: 2px;
 }
 .viewer2d {
-
+/* TODO: any needed styles to override the childred */
 }
 
 </style>

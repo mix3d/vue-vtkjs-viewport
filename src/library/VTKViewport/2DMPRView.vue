@@ -11,7 +11,12 @@
       @rotate="onRotate"
       @thickness="onThickness"
     />
-    <ViewportOverlay v-bind="dataDetails" :voi="voi" :active="isActive" :color="viewColor" />
+    <ViewportOverlay
+      v-bind="dataDetails"
+      :voi="voi"
+      :active="isActive"
+      :color="viewColor"
+    />
   </div>
 </template>
 
@@ -30,7 +35,7 @@ import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice";
 import ViewportOverlay from "../ViewportOverlay/ViewportOverlay.vue";
 import MPRInteractor from "../ViewportOverlay/MPRInteractor.vue";
 
-import { BLEND_MIP, BLEND_MINIP, BLEND_AVG, BLEND_NONE } from './consts';
+import { BLEND_MIP, BLEND_MINIP, BLEND_AVG, BLEND_NONE } from "./consts";
 import { createSub } from "../lib/createSub.js";
 import { degrees2radians } from "../lib/math/angles.js";
 
@@ -41,7 +46,7 @@ export default {
     volumes: { type: Array, required: true },
     views: { type: Object, required: true },
 
-    parallel: { type: Boolean, default: false},
+    parallel: { type: Boolean, default: false },
 
     // Front, Side, Top, etc, for which view data to use
     index: String,
@@ -80,7 +85,7 @@ export default {
       this.$emit("rotate", this.index, axis, angle);
     },
     onThickness(axis, thickness) {
-      this.$emit("thickness", this.index, axis, thickness)
+      this.$emit("thickness", this.index, axis, thickness);
     },
 
     onResize() {
@@ -96,6 +101,7 @@ export default {
     },
     updateVolumesForRendering(volumes) {
       if (volumes && volumes.length) {
+        this.renderer.removeAllVolumes();
         volumes.forEach(volume => {
           if (!volume.isA("vtkVolume")) {
             console.warn("Data to <Vtk2D> is not vtkVolume data");
@@ -192,7 +198,7 @@ export default {
       this.$emit("crosshairPointSelected", { ...data, index: this.index });
     },
     updateBlendMode(thickness) {
-      if (this.sliceThickness >= 1) {
+      if (thickness >= 1) {
         switch (this.blendMode) {
           case BLEND_MIP:
             this.volumes[0].getMapper().setBlendModeToMaximumIntensity();
@@ -215,7 +221,7 @@ export default {
     }
   },
   watch: {
-    volumes(newVolumes, oldVolumes) {
+    volumes(newVolumes) {
       this.updateVolumesForRendering(newVolumes);
     },
 
@@ -240,15 +246,15 @@ export default {
       const istyle = this.renderWindow.getInteractor().getInteractorStyle();
       // set thickness if the current interactor has it (it should, but just in case)
       istyle.setSlabThickness && istyle.setSlabThickness(thickness);
-      this.updateBlendMode(thickness)
+      this.updateBlendMode(thickness);
     },
 
-    blendMode(mode) {
-      this.updateBlendMode(this.sliceThickness)
+    blendMode() {
+      this.updateBlendMode(this.sliceThickness);
     },
     parallel(p) {
-      this.renderer.getActiveCamera().setParallelProjection(p)
-    },
+      this.renderer.getActiveCamera().setParallelProjection(p);
+    }
   },
   computed: {
     // Cribbed from the index and views
@@ -286,44 +292,46 @@ export default {
     xAxis() {
       switch (this.index) {
         case "top":
+        default:
           return {
             color: this.views.front.color,
             rotation: this.views.front.slicePlaneYRotation,
-            thickness: this.views.front.sliceThickness,
+            thickness: this.views.front.sliceThickness
           };
         case "left":
           return {
             color: this.views.top.color,
             rotation: this.views.top.slicePlaneXRotation,
-            thickness: this.views.top.sliceThickness,
+            thickness: this.views.top.sliceThickness
           };
         case "front":
           return {
             color: this.views.top.color,
             rotation: this.views.top.slicePlaneYRotation,
-            thickness: this.views.top.sliceThickness,
+            thickness: this.views.top.sliceThickness
           };
       }
     },
     yAxis() {
       switch (this.index) {
         case "top":
+        default:
           return {
             color: this.views.left.color,
             rotation: this.views.left.slicePlaneYRotation,
-            thickness: this.views.left.sliceThickness,
+            thickness: this.views.left.sliceThickness
           };
         case "left":
           return {
             color: this.views.front.color,
             rotation: this.views.front.slicePlaneXRotation,
-            thickness: this.views.front.sliceThickness,
+            thickness: this.views.front.sliceThickness
           };
         case "front":
           return {
             color: this.views.left.color,
             rotation: this.views.left.slicePlaneXRotation,
-            thickness: this.views.left.sliceThickness,
+            thickness: this.views.left.sliceThickness
           };
       }
     },
@@ -341,7 +349,10 @@ export default {
       }
     },
     voi() {
-      return { windowWidth: this.window.width, windowCenter: this.window.center };
+      return {
+        windowWidth: this.window.width,
+        windowCenter: this.window.center
+      };
     }
   },
   mounted() {
@@ -364,8 +375,8 @@ export default {
     this.renderWindow = this.genericRenderWindow.getRenderWindow();
     this.renderer = this.genericRenderWindow.getRenderer();
 
-    if(this.parallel) {
-      this.renderer.getActiveCamera().setParallelProjection(true)
+    if (this.parallel) {
+      this.renderer.getActiveCamera().setParallelProjection(true);
     }
 
     // update view node tree so that vtkOpenGLHardwareSelector can access the vtkOpenGLRenderer instance.

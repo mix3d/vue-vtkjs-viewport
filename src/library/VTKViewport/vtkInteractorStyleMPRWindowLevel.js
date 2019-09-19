@@ -1,18 +1,14 @@
-/**
- * Extends the vtkInteractorStyleMPRSlice by adding a click handler for modifying the window level and middle.
- * TODO: add a registered callback to update other views to that same point.
- */
-
 import macro from "vtk.js/Sources/macro";
-// import vtkMath from 'vtk.js/Sources/Common/Core/Math';
-// import vtkMatrixBuilder from 'vtk.js/Sources/Common/Core/MatrixBuilder';
-// import vtkInteractorStyleManipulator from 'vtk.js/Sources/Interaction/Style/InteractorStyleManipulator';
 import vtkMouseCameraTrackballRotateManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballRotateManipulator";
 import vtkMouseCameraTrackballPanManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballPanManipulator";
 import vtkMouseCameraTrackballZoomManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballZoomManipulator";
 import vtkMouseRangeManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseRangeManipulator";
 import vtkInteractorStyleMPRSlice from "./vtkInteractorStyleMPRSlice.js";
 import Constants from "vtk.js/Sources/Rendering/Core/InteractorStyle/Constants";
+import {
+  toWindowLevel,
+  toLowHighRange
+} from "../lib/windowLevelRangeConverter";
 
 const { States } = Constants;
 
@@ -27,7 +23,6 @@ const { States } = Constants;
 function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
   // Set our className
   model.classHierarchy.push("vtkInteractorStyleMPRWindowLevel");
-  model.wlStartPos = [0, 0];
 
   model.trackballManipulator = vtkMouseCameraTrackballRotateManipulator.newInstance(
     {
@@ -72,82 +67,14 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
   const superHandleMouseMove = publicAPI.handleMouseMove;
   publicAPI.handleMouseMove = callData => {
     const pos = [callData.position.x, callData.position.y];
-    const renderer = callData.pokedRenderer;
 
     if (model.state === States.IS_WINDOW_LEVEL) {
-      publicAPI.windowLevel(renderer, pos);
+      publicAPI.windowLevelFromMouse(pos);
       publicAPI.invokeInteractionEvent({ type: "InteractionEvent" });
     }
 
     if (superHandleMouseMove) {
       superHandleMouseMove(callData);
-    }
-  };
-  publicAPI.setWindowLevel = (windowWidth, windowCenter) => {
-    const lower = windowCenter - windowWidth / 2.0;
-    const upper = windowCenter + windowWidth / 2.0;
-    if (model.volumeMapper) {
-      model.volumeMapper
-        .getProperty()
-        .getRGBTransferFunction(0)
-        .setMappingRange(lower, upper);
-    }
-  };
-  publicAPI.windowLevel = (renderer, pos) => {
-    const rwi = model.interactor;
-    if (model.volumeMapper) {
-      const size = rwi.getView().getViewportSize(renderer);
-      const win = model.initialMRange[1] - model.initialMRange[0];
-      const level = (model.initialMRange[0] + model.initialMRange[1]) / 2.0;
-      let dx = ((pos[0] - model.wlStartPos[0]) * 4.0) / size[0];
-      let dy = ((pos[1] - model.wlStartPos[1]) * 4.0) / size[1];
-      if (Math.abs(win) > 0.01) {
-        dx *= win;
-      } else {
-        dx *= win < 0 ? -0.01 : 0.01;
-      }
-      if (Math.abs(level) > 0.01) {
-        dy *= level;
-      } else {
-        dy *= level < 0 ? -0.01 : 0.01;
-      }
-      if (win < 0.0) {
-        dx *= -1;
-      }
-      if (level < 0.0) {
-        dy *= -1;
-      }
-      const newWin = Math.max(0.01, dx + win);
-      const newLevel = level - dy;
-      const lower = newLevel - newWin / 2.0;
-      const upper = newLevel + newWin / 2.0;
-      model.volumeMapper
-        .getProperty()
-        .getRGBTransferFunction(0)
-        .setMappingRange(lower, upper);
-
-      const onLevelsChanged = publicAPI.getOnLevelsChanged();
-      if (onLevelsChanged) {
-        onLevelsChanged({ windowCenter: newLevel, windowWidth: newWin });
-      }
-    }
-  };
-
-  const superHandleLeftButtonPress = publicAPI.handleLeftButtonPress;
-  publicAPI.handleLeftButtonPress = callData => {
-    model.wlStartPos[0] = callData.position.x;
-    model.wlStartPos[1] = callData.position.y;
-    if (!callData.shiftKey && !callData.controlKey) {
-      const property = model.volumeMapper.getProperty();
-      if (property) {
-        model.initialMRange = property
-          .getRGBTransferFunction(0)
-          .getMappingRange()
-          .slice();
-        publicAPI.startWindowLevel();
-      }
-    } else if (superHandleLeftButtonPress) {
-      superHandleLeftButtonPress(callData);
     }
   };
 
@@ -159,9 +86,59 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
       if (mapper) {
         // prevent zoom manipulator from messing with our focal point
         camera.setFreezeFocalPoint(true);
+
+        // NOTE: Disabling this because it makes it more difficult to switch
+        // interactor styles. Need to find a better way to do this!
+        //publicAPI.setSliceNormal(...publicAPI.getSliceNormal());
       } else {
         camera.setFreezeFocalPoint(false);
       }
+    }
+  };
+
+  publicAPI.windowLevelFromMouse = pos => {
+    const dx = (pos[0] - model.wlStartPos[0]) * model.levelScale;
+    const dy = (pos[1] - model.wlStartPos[1]) * model.levelScale * 0.75;
+
+    let { windowWidth, windowCenter } = publicAPI.getWindowLevel();
+
+    windowWidth = Math.max(1, Math.floor(windowWidth + dx));
+    windowCenter = Math.floor(windowCenter + dy);
+
+    publicAPI.setWindowLevel(windowWidth, windowCenter);
+
+    model.wlStartPos = [...pos];
+
+    const onLevelsChanged = publicAPI.getOnLevelsChanged();
+    if (onLevelsChanged) {
+      onLevelsChanged({ windowCenter, windowWidth });
+    }
+  };
+
+  publicAPI.getWindowLevel = () => {
+    const range = model.volumeMapper
+      .getProperty()
+      .getRGBTransferFunction(0)
+      .getMappingRange()
+      .slice();
+    return toWindowLevel(...range);
+  };
+  publicAPI.setWindowLevel = (windowWidth, windowCenter) => {
+    const lowHigh = toLowHighRange(windowWidth, windowCenter);
+
+    model.volumeMapper
+      .getProperty()
+      .getRGBTransferFunction(0)
+      .setMappingRange(lowHigh.lower, lowHigh.upper);
+  };
+
+  const superHandleLeftButtonPress = publicAPI.handleLeftButtonPress;
+  publicAPI.handleLeftButtonPress = callData => {
+    model.wlStartPos = [callData.position.x, callData.position.y];
+    if (!callData.shiftKey && !callData.controlKey) {
+      publicAPI.startWindowLevel();
+    } else if (superHandleLeftButtonPress) {
+      superHandleLeftButtonPress(callData);
     }
   };
 
@@ -185,7 +162,10 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
 // Object factory
 // ----------------------------------------------------------------------------
 
-const DEFAULT_VALUES = {};
+const DEFAULT_VALUES = {
+  wlStartPos: [0, 0],
+  levelScale: 1
+};
 
 // ----------------------------------------------------------------------------
 
@@ -195,7 +175,11 @@ export function extend(publicAPI, model, initialValues = {}) {
   // Inheritance
   vtkInteractorStyleMPRSlice.extend(publicAPI, model, initialValues);
 
-  macro.setGet(publicAPI, model, ["volumeMapper", "onLevelsChanged"]);
+  macro.setGet(publicAPI, model, [
+    "volumeMapper",
+    "onLevelsChanged",
+    "levelScale"
+  ]);
 
   // Object specific methods
   vtkInteractorStyleMPRWindowLevel(publicAPI, model);

@@ -71,7 +71,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   const cache = {
     sliceNormal: [0, 0, 0],
     sliceRange: [0, 0],
-    slicePosition: [0, 0, 0],
+    slicePosition: [0, 0, 0]
   };
 
   function updateScrollManipulator() {
@@ -284,7 +284,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
 
   /**
    * Move the camera to the given slice normal and viewup direction. Viewup can be used to rotate the display of the image around the direction of view.
-   * 
+   *
    * TODO: setting the slice ALWAYS resets to the volume center, but we need to be able to rotate from an arbitrary position, AKA the intersection of all 3 slice planes.
    */
   // in world space
