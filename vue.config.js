@@ -39,5 +39,6 @@ module.exports = {
           to: path.join(__dirname, 'dist', 'itk', 'MeshIOs'),
         },
     ]]);
-  }
+  },
+  css: { extract: false }
 };

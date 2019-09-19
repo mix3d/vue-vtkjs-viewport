@@ -1,6 +1,6 @@
 // Import vue component
-import MPRManager from "@/library/VTKViewport/2DMPRManager.vue";
-import _consts from "@/library/VTKViewport/consts.js";
+import MPRManager from "./library/VTKViewport/2DMPRManager.vue";
+import _consts from "./library/VTKViewport/consts.js";
 
 // Export constant values
 export const consts = _consts;

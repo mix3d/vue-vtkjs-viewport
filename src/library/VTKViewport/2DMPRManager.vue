@@ -24,20 +24,18 @@
  * @emits "windowLevels"
  */
 
+import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
+import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
-
-import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
-import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
-
-import { FRONT, TOP, LEFT, LEVEL_TOOL, SELECT_TOOL, BLEND_NONE, BLEND_MIP } from "./consts";
 
 import View2dMPR from "./2DMPRView.vue";
 import vtkInteractorStyleMPRCrosshairs from "./vtkInteractorStyleMPRCrosshairs";
 import vtkInteractorStyleMPRWindowLevel from "./vtkInteractorStyleMPRWindowLevel";
 import getPlaneIntersection from "../lib/math/planeIntersections";
-
 import { toWindowLevel } from "../lib/windowLevelRangeConverter";
+
+import { FRONT, TOP, LEFT, LEVEL_TOOL, SELECT_TOOL, BLEND_NONE, BLEND_MIP } from "./consts";
 
 export default {
   components: {

@@ -1,28 +1,32 @@
 {
   "name": "vue-vtkjs-viewport",
   "version": "0.1.0",
-  "private": true,
+  "main": "lib/mpr.umd.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build:lib": "vue-cli-service build --target lib --dest lib --name mpr src/lib.js",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "predeploy": "npm install && npm run build:lib",
+    "prepublishOnly": "npm run build && yarn run build:release"
   },
   "dependencies": {
-    "core-js": "^2.6.5",
-    "cornerstone-core": "^2.2.8",
-    "cornerstone-math": "^0.1.8",
     "dayjs": "^1.8.14",
-    "itk": "^9.6.1",
     "lodash": "^4.17.15",
-    "shader-loader": "^1.3.1",
     "vtk.js": "^11.1.0",
-    "vue": "^2.6.10",
-    "vue-router": "^3.0.3",
-    "vuex": "^3.0.1",
+    "shader-loader": "^1.3.1",
     "worker-loader": "^2.0.0"
   },
+  "peerDependencies": {
+    "vtk.js": "^11.1.3"
+  },
   "devDependencies": {
+    "itk": "^9.6.1",
+    "cornerstone-core": "^2.2.8",
+    "cornerstone-math": "^0.1.8",
+    "vue": "^2.6.10",
+    "vuex": "^3.0.1",
+    "vue-router": "^3.0.3",
     "@vue/cli-plugin-babel": "^3.8.0",
     "@vue/cli-plugin-eslint": "^3.8.0",
     "@vue/cli-service": "^3.8.0",
