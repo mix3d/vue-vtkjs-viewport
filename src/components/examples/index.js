@@ -1,11 +1,9 @@
 import BasicVolume from "./BasicVolume.vue";
-import MPRCrosshairs from "./MPRCrosshairs.vue";
 import PaintWidget from "./PaintWidget.vue";
 import SlicePlanes from "./SlicePlanes.vue";
 import ResliceWidget from "./ResliceWidget.vue";
 import MPRPlanes from "./MPRPlanes.vue";
 import MPRManager from "./MPRManager.vue";
-import DicomLoader from "./DicomLoader.vue";
 
 export const files = [
   "headsq.vti",
@@ -30,13 +28,6 @@ export default [
     component: PaintWidget
   },
   {
-    title: "MPR Crosshairs",
-    url: "crosshairs",
-    description:
-      "Demonstrates how to set up the Crosshairs interactor style and SVG Widget",
-    component: MPRCrosshairs
-  },
-  {
     title: "MultiSlicePlanes",
     url: "sliceplanes",
     description:
@@ -49,12 +40,6 @@ export default [
     description:
       "Implementing the ResliceWidget based on VTK examples but with a real volume",
     component: ResliceWidget
-  },
-  {
-    title: "Dicom Loader",
-    url: "dicom",
-    description: "turn Dicom slices into a vtk volume",
-    component: DicomLoader
   },
   {
     title: "Full MPR Example",

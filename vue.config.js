@@ -24,21 +24,6 @@ module.exports = {
           fallback: false,
         })
         .end();
-    config.plugin('clean')
-    .use(CopyPlugin,[ [
-        {
-          from: path.join(__dirname, 'node_modules', 'itk', 'WebWorkers'),
-          to: path.join(__dirname, 'dist', 'itk', 'WebWorkers'),
-        },
-        {
-          from: path.join(__dirname, 'node_modules', 'itk', 'ImageIOs'),
-          to: path.join(__dirname, 'dist', 'itk', 'ImageIOs'),
-        },
-        {
-          from: path.join(__dirname, 'node_modules', 'itk', 'MeshIOs'),
-          to: path.join(__dirname, 'dist', 'itk', 'MeshIOs'),
-        },
-    ]]);
   },
   css: { extract: false }
 };

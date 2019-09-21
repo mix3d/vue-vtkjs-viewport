@@ -129,8 +129,6 @@ import {
   View2dMPR,
   vtkInteractorStyleMPRCrosshairs,
   vtkInteractorStyleMPRWindowLevel,
-  vtkSVGWidgetManager,
-  vtkSVGCrosshairsWidget
 } from "@/library";
 
 import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
@@ -350,12 +348,7 @@ export default {
         wPos.setValue(worldPos);
 
         const displayPosition = wPos.getComputedDisplayValue(renderer);
-        const { svgWidgetManager } = component;
-        component.svgWidgets.crosshairsWidget.setPoint(
-          displayPosition[0],
-          displayPosition[1]
-        );
-        svgWidgetManager.render();
+
       });
     },
 
@@ -398,21 +391,6 @@ export default {
 
         // default to the level tool
         this.setLevelTool([viewportIndex, component]);
-
-        //setup the svg widget manager
-        const svgWidgetManager = vtkSVGWidgetManager.newInstance();
-        svgWidgetManager.setRenderer(renderer);
-        svgWidgetManager.setScale(1);
-
-        const crosshairsWidget = vtkSVGCrosshairsWidget.newInstance();
-
-        svgWidgetManager.addWidget(crosshairsWidget);
-        svgWidgetManager.render();
-
-        component.svgWidgetManager = svgWidgetManager;
-        component.svgWidgets = {
-          crosshairsWidget
-        };
 
         renderWindow.render();
       };
