@@ -4,21 +4,23 @@
 //prettier-ignore
 module.exports = {
   chainWebpack: config => {
-    config.externals({
-      'vtk.js': 'vtk.js',
-      'cornerstone-core': {
-        commonjs: 'cornerstone-core',
-        commonjs2: 'cornerstone-core',
-        amd: 'cornerstone-core',
-        root: 'cornerstone',
+    config.externals([
+      /\b(vtk.js)/,
+      {
+        'cornerstone-core': {
+          commonjs: 'cornerstone-core',
+          commonjs2: 'cornerstone-core',
+          amd: 'cornerstone-core',
+          root: 'cornerstone',
+        },
+        'cornerstone-math': {
+          commonjs: 'cornerstone-math',
+          commonjs2: 'cornerstone-math',
+          amd: 'cornerstone-math',
+          root: 'cornerstoneMath',
+        }
       },
-      'cornerstone-math': {
-        commonjs: 'cornerstone-math',
-        commonjs2: 'cornerstone-math',
-        amd: 'cornerstone-math',
-        root: 'cornerstoneMath',
-      }
-    });
+    ]);
     // Shader Loader
     config.module
       .rule("shaderloader")
