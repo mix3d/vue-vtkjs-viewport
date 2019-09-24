@@ -1,6 +1,8 @@
 # vue-vtkjs-viewport
 
-VTK.js image viewport component in Vue
+VTK.js image viewport component for Vue
+
+Sister project of [react-vtkjs-viewport](https://github.com/OHIF/react-vtkjs-viewport), with some variations of implementation.
 
 =======
 
@@ -16,18 +18,5 @@ npm run serve
 
 ### Compiles and minifies for production
 ```
-npm run build
+npm run build:lib
 ```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
