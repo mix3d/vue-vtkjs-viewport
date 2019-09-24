@@ -14,6 +14,7 @@ export default function getImageData(imageIds, displaySetInstanceUid) {
     return cachedImageDataObject;
   }
 
+  // NOTE: register cornerstone Metadata provider first!
   const { metaData0, metaDataMap, imageMetaData0 } = buildMetadata(imageIds);
 
   const { rowCosines, columnCosines } = metaData0;
