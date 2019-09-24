@@ -1,4 +1,4 @@
-import { Vector3 } from "cornerstone-math";
+import { vec3 } from "gl-matrix";
 import vtkImageData from "vtk.js/Sources/Common/DataModel/ImageData";
 import vtkDataArray from "vtk.js/Sources/Common/Core/DataArray";
 
@@ -17,13 +17,17 @@ export default function getImageData(imageIds, displaySetInstanceUid) {
   const { metaData0, metaDataMap, imageMetaData0 } = buildMetadata(imageIds);
 
   const { rowCosines, columnCosines } = metaData0;
-  const rowCosineVec = new Vector3(rowCosines[0], rowCosines[1], rowCosines[2]);
-  const colCosineVec = new Vector3(
-    columnCosines[0],
-    columnCosines[1],
-    columnCosines[2]
+  const rowCosineVec = vec3.fromValues(
+    rowCosines.x,
+    rowCosines.y,
+    rowCosines.z
   );
-  const crossProduct = colCosineVec.cross(rowCosineVec);
+  const colCosineVec = vec3.fromValues(
+    columnCosines.x,
+    columnCosines.y,
+    columnCosines.z
+  );
+  const crossProduct = vec3.cross([], colCosineVec, rowCosineVec);
 
   const orientation = determineOrientation(crossProduct);
   const zAxis = computeZAxis(orientation, metaDataMap);
@@ -70,15 +74,9 @@ export default function getImageData(imageIds, displaySetInstanceUid) {
   const imageData = vtkImageData.newInstance();
 
   const direction = [
-    rowCosineVec.x,
-    rowCosineVec.y,
-    rowCosineVec.z,
-    colCosineVec.x,
-    colCosineVec.x,
-    colCosineVec.z,
-    crossProduct.x,
-    crossProduct.y,
-    crossProduct.z
+    ...rowCosineVec,
+    ...colCosineVec,
+    ...crossProduct
   ];
 
   imageData.setDimensions(xVoxels, yVoxels, zVoxels);

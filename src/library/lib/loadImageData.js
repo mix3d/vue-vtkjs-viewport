@@ -1,9 +1,9 @@
-import cornerstone from "cornerstone-core";
+import { loadAndCacheImage } from "cornerstone-core";
 import getSliceIndex from "./data/getSliceIndex.js";
 import insertSlice from "./data/insertSlice.js";
 
 function loadImageDataProgressively(imageIds, imageData, metaDataMap, zAxis) {
-  const loadImagePromises = imageIds.map(cornerstone.loadAndCacheImage);
+  const loadImagePromises = imageIds.map(loadAndCacheImage);
 
   const insertPixelData = image => {
     const { imagePositionPatient } = metaDataMap.get(image.imageId);
