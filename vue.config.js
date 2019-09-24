@@ -1,9 +1,12 @@
-const path = require("path");
-const CopyPlugin = require("copy-webpack-plugin");
+// const path = require("path");
+// const CopyPlugin = require("copy-webpack-plugin");
 
 //prettier-ignore
 module.exports = {
   chainWebpack: config => {
+    config.externals({
+      'vtk.js': 'vtk.js',
+    });
     // Shader Loader
     config.module
       .rule("shaderloader")
