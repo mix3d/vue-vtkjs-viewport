@@ -72,10 +72,6 @@ import {
 } from "@/library";
 
 import vtkHttpDataSetReader from "vtk.js/Sources/IO/Core/HttpDataSetReader";
-import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
-import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
-
-import vtkPlane from "vtk.js/Sources/Common/DataModel/Plane";
 
 import { files } from "@/components/examples";
 import { LEVEL_TOOL, SELECT_TOOL } from "@/library/VTKViewport/consts";
@@ -188,11 +184,6 @@ export default {
       const reader = vtkHttpDataSetReader.newInstance({
         fetchGzip: true
       });
-      const volumeActor = vtkVolume.newInstance();
-      const volumeMapper = vtkVolumeMapper.newInstance();
-      volumeMapper.setSampleDistance(1);
-
-      volumeActor.setMapper(volumeMapper);
 
       reader
         .setUrl(`/${fileString || this.selectedFile}`, { loadData: true })

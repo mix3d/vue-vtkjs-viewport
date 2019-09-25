@@ -76,6 +76,7 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
 
   function updateScrollManipulator() {
     const range = publicAPI.getSliceRange();
+    console.log("updating the manipulator", range)
     model.scrollManipulator.removeScrollListener();
     // The Scroll listener has min, max, step, and getValue setValue as params.
     // Internally, it checks that the result of the GET has changed, and only calls SET if it is new.
@@ -182,6 +183,8 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
   publicAPI.setSlice = slice => {
     const renderer = model.interactor.getCurrentRenderer();
     const camera = renderer.getActiveCamera();
+
+    console.log("slice", slice)
 
     if (model.volumeMapper) {
       const range = publicAPI.getSliceRange();
@@ -315,25 +318,33 @@ function vtkInteractorStyleMPRSlice(publicAPI, model) {
       // Convert the provided normal into the volume's space
       vtkMath.multiply3x3_vect3(volumeCoordinateSpace, _normal, _normal);
 
-      const bounds = model.volumeMapper.getBounds();
-      // diagonal will be used as "width" of camera scene
-      const diagonal = Math.sqrt(
-        vtkMath.distance2BetweenPoints(
-          [bounds[0], bounds[2], bounds[4]],
-          [bounds[1], bounds[3], bounds[5]]
-        )
-      );
+      let center = camera.getFocalPoint();
+      let dist = camera.getDistance();
+      let angle = camera.getViewAngle();
 
-      // center will be used as initial focal point
-      const center = [
-        (bounds[0] + bounds[1]) / 2.0,
-        (bounds[2] + bounds[3]) / 2.0,
-        (bounds[4] + bounds[5]) / 2.0
-      ];
+      if (Number.isNaN(dist) || dist === undefined) {
+        // Default the volume center
+        const bounds = model.volumeMapper.getBounds();
+        // diagonal will be used as "width" of camera scene
+        const diagonal = Math.sqrt(
+          vtkMath.distance2BetweenPoints(
+            [bounds[0], bounds[2], bounds[4]],
+            [bounds[1], bounds[3], bounds[5]]
+          )
+        );
 
-      const angle = 90;
-      // distance from camera to focal point
-      const dist = diagonal / (2 * Math.tan((angle / 360) * Math.PI));
+        // center will be used as initial focal point
+        center = [
+          (bounds[0] + bounds[1]) / 2.0,
+          (bounds[2] + bounds[3]) / 2.0,
+          (bounds[4] + bounds[5]) / 2.0,
+        ];
+
+        angle = 90;
+
+        // distance from camera to focal point
+        dist = diagonal / (2 * Math.tan((angle / 360) * Math.PI));
+      }
 
       const cameraPos = [
         center[0] - _normal[0] * dist,

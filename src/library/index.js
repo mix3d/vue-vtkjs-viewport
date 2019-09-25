@@ -7,10 +7,9 @@ import ViewportOverlay from "./ViewportOverlay/ViewportOverlay.vue";
 import vtkInteractorStyleMPRSlice from "./VTKViewport/vtkInteractorStyleMPRSlice.js";
 import vtkInteractorStyleMPRWindowLevel from "./VTKViewport/vtkInteractorStyleMPRWindowLevel.js";
 import vtkInteractorStyleMPRCrosshairs from "./VTKViewport/vtkInteractorStyleMPRCrosshairs.js";
-import vtkSVGWidgetManager from "./VTKViewport/vtkSVGWidgetManager.js";
-import vtkSVGCrosshairsWidget from "./VTKViewport/vtkSVGCrosshairsWidget.js";
 import getImageData from "./lib/getImageData.js";
 import loadImageData from "./lib/loadImageData.js";
+import consts from "./VTKViewport/consts"
 
 export {
   View2dMPR,
@@ -24,8 +23,7 @@ export {
   vtkInteractorStyleMPRSlice,
   vtkInteractorStyleMPRWindowLevel,
   vtkInteractorStyleMPRCrosshairs,
-  vtkSVGWidgetManager,
-  vtkSVGCrosshairsWidget
+  consts
 };
 
-export default View2D;
+export default MPRManager;

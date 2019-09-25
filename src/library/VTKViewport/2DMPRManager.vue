@@ -24,7 +24,6 @@
  * @emits "windowLevels"
  */
 
-import vtkCoordinate from "vtk.js/Sources/Rendering/Core/Coordinate";
 import vtkMatrixBuilder from "vtk.js/Sources/Common/Core/MatrixBuilder";
 import vtkVolume from "vtk.js/Sources/Rendering/Core/Volume";
 import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";

@@ -1,4 +1,4 @@
-import { getImageData } from "./getImageData.js";
+import getImageData from "./getImageData.js";
 import loadImageData from "./loadImageData.js";
 import { logMemoryUsage } from "./logMemoryUsage.js";
 import { math } from "./math/index.js";

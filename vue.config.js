@@ -2,32 +2,36 @@
 // const path = require("path");
 // const CopyPlugin = require("copy-webpack-plugin");
 
+const vtkRegex = /\b(vtk.js)/
+
 const plugins = []
+const externals = [
+  {
+    "cornerstone-core": {
+      commonjs: "cornerstone-core",
+      commonjs2: "cornerstone-core",
+      amd: "cornerstone-core",
+      root: "cornerstone"
+    }
+  }
+]
+
 if(process.env.NODE_ENV === "production") {
   const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
   plugins.push(new BundleAnalyzerPlugin())
-}
 
-const vtkRegex = /\b(vtk.js)/
+  externals.push(vtkRegex)
+}
 
 //prettier-ignore
 module.exports = {
   configureWebpack: {
     plugins,
+
   },
   chainWebpack: config => {
-    config.externals([
-      vtkRegex,
-      {
-        "cornerstone-core": {
-          commonjs: "cornerstone-core",
-          commonjs2: "cornerstone-core",
-          amd: "cornerstone-core",
-          root: "cornerstone"
-        }
-      }
-    ]);
+    config.externals(externals);
     // Shader Loader
     config.module
       .rule("shaderloader")

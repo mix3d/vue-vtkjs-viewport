@@ -74,15 +74,11 @@ export default function getImageData(imageIds, displaySetInstanceUid) {
 
   const imageData = vtkImageData.newInstance();
 
-  const direction = [
-    ...rowCosineVec,
-    ...colCosineVec,
-    ...crossProduct
-  ];
+  const direction = [...rowCosineVec, ...colCosineVec, ...crossProduct];
 
   imageData.setDimensions(xVoxels, yVoxels, zVoxels);
   imageData.setSpacing(xSpacing, ySpacing, zSpacing);
-  imageData.setOrigin(...zAxis.origin);
+  imageData.setOrigin(zAxis.origin.x, zAxis.origin.y, zAxis.origin.z);
   //imageData.setDirection(direction);
   imageData.getPointData().setScalars(scalarArray);
 

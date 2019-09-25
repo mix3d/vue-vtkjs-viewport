@@ -100,16 +100,15 @@ export default {
       this.height = height;
     },
     updateVolumesForRendering(volumes) {
+      this.renderer.removeAllVolumes();
       if (volumes && volumes.length) {
-        this.renderer.removeAllVolumes();
         volumes.forEach(volume => {
           if (!volume.isA("vtkVolume")) {
             console.warn("Data to <Vtk2D> is not vtkVolume data");
+          } else {
+            this.renderer.addVolume(volume);
           }
-          this.renderer.addVolume(volume);
         });
-      } else {
-        this.renderer.removeAllVolumes();
       }
       this.renderWindow.render();
     },
@@ -396,6 +395,7 @@ export default {
 
     //start with the volume center slice
     const range = istyle.getSliceRange();
+    console.log('view mounted: setting the initial range', range)
     istyle.setSlice((range[0] + range[1]) / 2);
 
     // add the current volumes to the vtk renderer
