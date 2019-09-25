@@ -1,10 +1,8 @@
-import cornerstone from 'cornerstone-core'
-
-export default function buildMetadata(imageIds) {
+export default function buildMetadata(imageIds, metaDataProvider) {
   // Retrieve the Cornerstone imageIds from the display set
   // TODO: In future, we want to get the metadata independently from Cornerstone
   // NOTE: The caller of buildMetaData must have already registered a metaData Provider
-  const imagePixelMetaData = cornerstone.metaData.get(
+  const imagePixelMetaData = metaDataProvider(
     'imagePixelModule',
     imageIds[0]
   )
@@ -21,7 +19,7 @@ export default function buildMetadata(imageIds) {
   const metaDataMap = new Map()
   imageIds.forEach(imageId => {
     // TODO: Retrieve this from somewhere other than Cornerstone
-    const metaData = cornerstone.metaData.get('imagePlaneModule', imageId)
+    const metaData = metaDataProvider('imagePlaneModule', imageId)
 
     metaDataMap.set(imageId, metaData)
   })

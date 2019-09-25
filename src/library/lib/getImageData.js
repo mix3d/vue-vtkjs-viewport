@@ -7,7 +7,17 @@ import determineOrientation from "./data/determineOrientation.js";
 import computeZAxis from "./data/computeZAxis.js";
 import imageDataCache from "./data/imageDataCache.js";
 
-export default function getImageData(imageIds, displaySetInstanceUid) {
+/**
+ * 
+ * @param {*} imageIds
+ * @param {*} displaySetInstanceUid
+ * @param {*} metaDataProvider - This needs to follow the cornerstone core's metaData.get() method.
+ */
+export default function getImageData(
+  imageIds,
+  displaySetInstanceUid,
+  metaDataProvider
+) {
   const cachedImageDataObject = imageDataCache.get(displaySetInstanceUid);
 
   if (cachedImageDataObject) {
@@ -15,7 +25,10 @@ export default function getImageData(imageIds, displaySetInstanceUid) {
   }
 
   // NOTE: register cornerstone Metadata provider first!
-  const { metaData0, metaDataMap, imageMetaData0 } = buildMetadata(imageIds);
+  const { metaData0, metaDataMap, imageMetaData0 } = buildMetadata(
+    imageIds,
+    metaDataProvider
+  );
 
   const { rowCosines, columnCosines } = metaData0;
   const rowCosineVec = vec3.fromValues(
