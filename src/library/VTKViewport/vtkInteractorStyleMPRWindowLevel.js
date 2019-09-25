@@ -98,9 +98,19 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
     }
   };
 
-  publicAPI.windowLevelFromMouse = pos => {
-    const dx = (pos[0] - model.wlStartPos[0]) * model.levelScale;
-    const dy = (pos[1] - model.wlStartPos[1]) * model.levelScale * 0.75;
+  publicAPI.windowLevelFromMouse = ([mx, my]) => {
+    const range = model.volumeMapper
+      .getMapper()
+      .getInputData()
+      .getPointData()
+      .getScalars()
+      .getRange();
+    const imageDynamicRange = range[1] - range[0];
+    const multiplier = (imageDynamicRange / 1024) * model.levelScale;
+
+    const dx = Math.floor((mx - model.wlStartPos[0]) * multiplier);
+    // scale the center at a smaller scale
+    const dy = Math.floor((my - model.wlStartPos[1]) * multiplier * 0.5);
 
     let { windowWidth, windowCenter } = publicAPI.getWindowLevel();
 
@@ -109,7 +119,7 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
 
     publicAPI.setWindowLevel(windowWidth, windowCenter);
 
-    model.wlStartPos = [...pos];
+    model.wlStartPos = [mx, my];
 
     const onLevelsChanged = publicAPI.getOnLevelsChanged();
     if (onLevelsChanged) {
