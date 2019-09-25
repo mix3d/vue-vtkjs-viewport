@@ -91,7 +91,7 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
 
         // NOTE: Disabling this because it makes it more difficult to switch
         // interactor styles. Need to find a better way to do this!
-        //publicAPI.setSliceNormal(...publicAPI.getSliceNormal());
+        // publicAPI.setSliceNormal(...publicAPI.getSliceNormal());
       } else {
         camera.setFreezeFocalPoint(false);
       }
@@ -108,14 +108,14 @@ function vtkInteractorStyleMPRWindowLevel(publicAPI, model) {
     const imageDynamicRange = range[1] - range[0];
     const multiplier = (imageDynamicRange / 1024) * model.levelScale;
 
-    const dx = Math.floor((mx - model.wlStartPos[0]) * multiplier);
+    const dx = (mx - model.wlStartPos[0]) * multiplier;
     // scale the center at a smaller scale
-    const dy = Math.floor((my - model.wlStartPos[1]) * multiplier * 0.5);
+    const dy = (my - model.wlStartPos[1]) * multiplier * 0.5;
 
     let { windowWidth, windowCenter } = publicAPI.getWindowLevel();
 
-    windowWidth = Math.max(1, Math.floor(windowWidth + dx));
-    windowCenter = Math.floor(windowCenter + dy);
+    windowWidth = Math.max(1, Math.round(windowWidth + dx));
+    windowCenter = Math.round(windowCenter + dy);
 
     publicAPI.setWindowLevel(windowWidth, windowCenter);
 

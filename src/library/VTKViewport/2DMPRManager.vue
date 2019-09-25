@@ -51,7 +51,7 @@ export default {
     },
     windowLevelScale: {
       type: Number,
-      default: 5
+      default: 2
     },
     volumeData: {
       type: Object,
@@ -328,7 +328,7 @@ export default {
       // not enough time between resize event and the right data coming through it seems.
       window.setTimeout(() => {
         this.onScrolled();
-      }, 10);
+      }, 20);
     };
     // update intersection point when window resizes
     window.addEventListener("resize", this.resizeFunction);
@@ -344,20 +344,18 @@ function setInteractor(component, istyle) {
   // We are assuming the old style is always extended from the MPRSlice style
   const oldStyle = renderWindow.getInteractor().getInteractorStyle();
 
-  renderWindow.getInteractor().setInteractorStyle(istyle);
-  // NOTE: react-vtk-viewport's code put this here, so we're copying it. Seems redundant?
-  istyle.setInteractor(renderWindow.getInteractor());
 
-  // Make sure to set the style to the interactor itself, because reasons...?!
   const inter = renderWindow.getInteractor();
+  // NOTE: react-vtk-viewport's code put this here, so we're copying it. Seems redundant?
+  istyle.setInteractor(inter);
+  // Make sure to set the style to the interactor itself, because reasons...?!
   inter.setInteractorStyle(istyle);
 
-  // Copy previous interactors styles into the new one.
-  if (istyle.setSliceNormal && oldStyle.getSliceNormal()) {
-    // console.log("setting slicenormal from old normal");
+  // Copy previous interactors styles (if there) into the new one.
+  if (istyle.setSliceNormal && oldStyle.getSliceNormal) {
     istyle.setSliceNormal(oldStyle.getSliceNormal(), oldStyle.getViewUp());
   }
-  if (istyle.setSlabThickness && oldStyle.getSlabThickness()) {
+  if (istyle.setSlabThickness && oldStyle.getSlabThickness) {
     istyle.setSlabThickness(oldStyle.getSlabThickness());
   }
   istyle.setVolumeMapper(component.volumes[0]);

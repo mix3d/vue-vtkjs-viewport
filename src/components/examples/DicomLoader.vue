@@ -62,7 +62,7 @@ import vtkVolumeMapper from "vtk.js/Sources/Rendering/Core/VolumeMapper";
 import vtkColorTransferFunction from "vtk.js/Sources/Rendering/Core/ColorTransferFunction";
 import vtkPiecewiseFunction from "vtk.js/Sources/Common/DataModel/PiecewiseFunction";
 
-import dicomLoader from "@/library/lib/data/dicomLoader.js";
+// import dicomLoader from "@/library/lib/data/dicomLoader.js";
 
 export default {
   components: {
@@ -137,7 +137,7 @@ export default {
     loadData(files) {
       this.loading = true;
 
-      const loader = dicomLoader.newInstance();
+      const loader = {}; //dicomLoader.newInstance();
       console.log(loader);
 
       const volumeActor = vtkVolume.newInstance();

@@ -172,12 +172,13 @@ export default {
       vec3.transformQuat(this.cachedSliceViewUp, this.sliceViewUp, viewRotQuat);
 
       // update the view's slice
-      // FIXME: Store/remember the slice currently looked at, so you rotate around that location instead of the volume center
       const renderWindow = this.genericRenderWindow.getRenderWindow();
-      renderWindow
+      const istyle = renderWindow
         .getInteractor()
         .getInteractorStyle()
-        .setSliceNormal(this.cachedSlicePlane, this.cachedSliceViewUp);
+      if (istyle && istyle.setSliceNormal) {
+        istyle.setSliceNormal(this.cachedSlicePlane, this.cachedSliceViewUp);
+      }
 
       renderWindow.render();
     },
@@ -357,7 +358,6 @@ export default {
 
     let widgets = [];
     let filters = [];
-    let volumes = [];
 
     this.renderWindow = this.genericRenderWindow.getRenderWindow();
     this.renderer = this.genericRenderWindow.getRenderer();
@@ -371,13 +371,9 @@ export default {
     oglrw.buildPass(true);
 
     const istyle = vtkInteractorStyleMPRSlice.newInstance();
-    // istyle.setOnScroll(this.onStackScroll)
+    istyle.setOnScroll(this.onStackScroll)
     const inter = this.renderWindow.getInteractor();
     inter.setInteractorStyle(istyle);
-
-    if (this.volumes) {
-      volumes = volumes.concat(this.volumes);
-    }
 
     /*
     // TODO: Use for maintaining clipping range for MIP
@@ -418,7 +414,7 @@ export default {
         container: this.$refs.container,
         widgets,
         filters,
-        volumes,
+        volumes: [...this.volumes],
         _component: this
       });
     }
