@@ -321,7 +321,20 @@ export default {
       this.sliceIntersection = getVolumeCenter(volumeMapper);
       this.volumes = [volumeActor];
       this.initialized = true;
-    }
+    },
+    reset() {
+      Object.values(this.components).forEach(c => {
+        c._component.updateSlicePlane()
+        const istyle = c.volumes[0].getInteractor().getInteractorStyle()
+        if (istyle) {
+          const range = istyle.getSliceRange();
+          istyle.setSlice((range[0] + range[1]) / 2);
+        }
+      })
+
+      const volumeMapper = this.components[0].volumes[0].getMapper()
+      this.sliceIntersection = getVolumeCenter(volumeMapper);
+    },
   },
   mounted() {
     this.resizeFunction = () => {

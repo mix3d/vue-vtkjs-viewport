@@ -357,7 +357,6 @@ export default {
     this.genericRenderWindow.setContainer(this.$refs.container);
 
     let widgets = [];
-    let filters = [];
 
     this.renderWindow = this.genericRenderWindow.getRenderWindow();
     this.renderer = this.genericRenderWindow.getRenderer();
@@ -391,7 +390,7 @@ export default {
 
     //start with the volume center slice
     const range = istyle.getSliceRange();
-    console.log('view mounted: setting the initial range', range)
+    // console.log('view mounted: setting the initial range', range)
     istyle.setSlice((range[0] + range[1]) / 2);
 
     // add the current volumes to the vtk renderer
@@ -413,7 +412,6 @@ export default {
         widgetManager: this.widgetManager,
         container: this.$refs.container,
         widgets,
-        filters,
         volumes: [...this.volumes],
         _component: this
       });
