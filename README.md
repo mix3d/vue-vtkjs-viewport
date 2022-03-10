@@ -7,6 +7,10 @@ Sister project of [react-vtkjs-viewport](https://github.com/OHIF/react-vtkjs-vie
 
 =======
 
+NOTE: This project has not received much love, and is not quite diverged from the react-vtkjs-viewport project. Happy to accept PRs to update it!
+
+=======
+
 ## Project setup
 ```
 npm install
